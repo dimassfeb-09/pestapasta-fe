@@ -30,7 +30,7 @@ export default function CardMenu({
         <div className="font-bold text-md">{title}</div>
         <div className="flex items-center gap-1 px-2 py-1 text-sm text-white bg-black border rounded-lg w-max">
           <div>{rating}</div>
-          <Star fontSize="small" />
+          <Star fontSize="small" className="text-yellow-500" />
         </div>
         <div className="text-sm">{description}</div>
         <div>{formatToRupiah(price)}</div>
