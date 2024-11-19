@@ -30,28 +30,9 @@ export default function CheckoutPage() {
           image_url={
             "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs2paowiODEqEOJ082fLEWgrlBjvBlGd2GrQ&s"
           }
-        />
-
-        <CardMenuCheckout
-          id={1}
-          title={"Nama Makanan"}
-          rating={5.0}
-          price={10000}
-          total_item={5}
-          image_url={
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs2paowiODEqEOJ082fLEWgrlBjvBlGd2GrQ&s"
-          }
-        />
-
-        <CardMenuCheckout
-          id={1}
-          title={"Nama Makanan"}
-          rating={5.0}
-          price={10000}
-          total_item={5}
-          image_url={
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs2paowiODEqEOJ082fLEWgrlBjvBlGd2GrQ&s"
-          }
+          onNoteChange={(note) => {
+            console.log(note);
+          }}
         />
       </div>
 

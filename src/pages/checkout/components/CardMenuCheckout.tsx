@@ -9,6 +9,7 @@ interface CardMenuCheckoutProps {
   price: number;
   total_item: number;
   image_url: string;
+  onNoteChange: (note: string) => void;
 }
 
 export default function CardMenuCheckout({
@@ -18,9 +19,16 @@ export default function CardMenuCheckout({
   price,
   image_url,
   total_item,
+  onNoteChange,
 }: CardMenuCheckoutProps) {
-  const [note, setNote] = useState<string>("");
   const [isNoteEditActive, setIsNoteEditActive] = useState<boolean>(false);
+  const [note, setNote] = useState<string>("");
+
+  const handleNoteChange = (e: any) => {
+    const newNote = e.target.value;
+    setNote(newNote);
+    onNoteChange(newNote);
+  };
 
   return (
     <div
@@ -43,7 +51,8 @@ export default function CardMenuCheckout({
           <input
             id="note"
             type="text"
-            onChange={(e) => setNote(e.target.value)}
+            value={note}
+            onChange={handleNoteChange}
             placeholder="Tambahkan catatan"
             className="flex-1 px-4 py-1 text-gray-700 placeholder-gray-500 transition-all border-none rounded-md focus:outline-none focus:ring-0"
             disabled={!isNoteEditActive} // Disable input if edit is not active
