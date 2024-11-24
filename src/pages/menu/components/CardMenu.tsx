@@ -66,7 +66,7 @@ export default function CardMenu({
 
       {onImageClick && (
         <div
-          className="fixed inset-0 z-10 flex items-center justify-center bg-gray-900 bg-opacity-50"
+          className="fixed inset-0 z-10 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50"
           onClick={() => setOnImageClick(false)}
         >
           {/* Modal Content */}
