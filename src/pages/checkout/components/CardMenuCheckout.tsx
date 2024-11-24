@@ -1,93 +1,85 @@
-import { Add, Close, Edit, Remove, Star } from "@mui/icons-material";
+import { Add, Check, Edit, Remove, Star } from "@mui/icons-material";
 import { formatToRupiah } from "../../../utills/toRupiah";
+import { Product } from "../../../models/Product";
 import { useState } from "react";
 
 interface CardMenuCheckoutProps {
-  id: number;
-  title: string;
-  rating: number;
-  price: number;
+  product: Product;
   total_item: number;
-  image_url: string;
-  onNoteChange: (note: string) => void;
+  note?: string;
+  onNote: (note: string) => void;
+  onAdd: (product: Product) => void;
+  onRemove: (product: Product) => void;
 }
 
 export default function CardMenuCheckout({
-  id,
-  title,
-  rating,
-  price,
-  image_url,
+  product,
   total_item,
-  onNoteChange,
+  note,
+  onNote,
+  onAdd,
+  onRemove,
 }: CardMenuCheckoutProps) {
   const [isNoteEditActive, setIsNoteEditActive] = useState<boolean>(false);
-  const [note, setNote] = useState<string>("");
-
-  const handleNoteChange = (e: any) => {
-    const newNote = e.target.value;
-    setNote(newNote);
-    onNoteChange(newNote);
-  };
 
   return (
     <div
-      key={id}
-      className={`rounded-md flex items-center justify-between py-2 px-5 border card_makanan`}
+      key={product.id}
+      className="flex items-center justify-between px-3 py-2 border rounded-md card_makanan"
     >
-      <div className="flex flex-col gap-2">
-        <div className="font-bold text-md">{title}</div>
+      <div className="flex flex-col gap-3">
+        <div className="font-bold text-md">{product.name}</div>
         <div className="flex items-center gap-1 px-2 py-1 text-sm text-white bg-black border rounded-lg w-max">
-          <div>{rating}</div>
+          <div>{product.rating}</div>
           <Star className="text-yellow-500" fontSize="small" />
         </div>
 
         <div
-          className={`flex items-center px-1 py-1 space-x-2 ${
-            isNoteEditActive ? "" : "bg-gray-100"
-          } border border-gray-300 rounded-lg`}
+          className={`flex items-center p-1 border rounded-md w-min ${
+            isNoteEditActive ? "bg-white" : "bg-gray-200"
+          } w-full`}
         >
-          {/* Input Field */}
           <input
-            id="note"
             type="text"
             value={note}
-            onChange={handleNoteChange}
+            onChange={(e) => onNote(e.target.value)}
             placeholder="Tambahkan catatan"
-            className="flex-1 px-4 py-1 text-gray-700 placeholder-gray-500 transition-all border-none rounded-md focus:outline-none focus:ring-0"
-            disabled={!isNoteEditActive} // Disable input if edit is not active
+            className={`px-2 py-1 text-xs text-gray-700 placeholder-gray-500 transition-all border-none rounded-md focus:outline-none ${
+              isNoteEditActive ? "bg-white" : "bg-transparent"
+            }`}
+            style={{
+              width: isNoteEditActive ? "100%" : "60%", // Lebar lebih besar saat aktif
+              minWidth: "150px", // Memberikan batas minimum lebar
+            }}
+            disabled={!isNoteEditActive}
           />
 
-          {/* Edit Icon (Visible when isNoteEditActive is false) */}
-          {!isNoteEditActive && (
+          {!isNoteEditActive ? (
             <Edit
-              onClick={() => setIsNoteEditActive(true)} // Enable edit mode when clicked
-              className="text-gray-600 transition-all cursor-pointer hover:text-blue-500"
+              onClick={() => setIsNoteEditActive(true)}
+              className="ml-2 text-gray-600 transition-all cursor-pointer hover:text-blue-500"
             />
-          )}
-
-          {/* Close Icon (Visible when isNoteEditActive is true) */}
-          {isNoteEditActive && (
-            <Close
-              onClick={() => setIsNoteEditActive(false)} // Disable edit mode when clicked
-              className="text-gray-600 transition-all cursor-pointer hover:text-red-500"
+          ) : (
+            <Check
+              onClick={() => setIsNoteEditActive(false)}
+              className="ml-2 text-gray-600 transition-all cursor-pointer hover:text-green-500"
             />
           )}
         </div>
 
-        <div>{formatToRupiah(price)}</div>
+        <div>{formatToRupiah(product.price)}</div>
       </div>
       <div className="flex flex-col items-center justify-center">
         <img
-          src={image_url}
-          className="rounded-lg max-h-32 max-w-3max-h-32"
-          alt={title}
+          src={product.image_url}
+          className="rounded-lg max-w-32 max-h-32"
+          alt={product.name}
           draggable={false}
         />
         <div className="flex items-center justify-center gap-3 px-1 mt-2 border border-black rounded-md text-whitebg-black">
-          <Remove />
+          <Remove onClick={() => onRemove(product)} />
           <div>{total_item}</div>
-          <Add />
+          <Add onClick={() => onAdd(product)} />
         </div>
       </div>
     </div>
