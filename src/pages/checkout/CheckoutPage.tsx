@@ -11,7 +11,7 @@ export default function CheckoutPage() {
     string | null
   >(null);
   const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
-  const [products, setProducts] = useState<Product[]>([
+  const [products, _] = useState<Product[]>([
     {
       id: 1,
       name: "Dimas Sugar Tea with Caramel Smile",

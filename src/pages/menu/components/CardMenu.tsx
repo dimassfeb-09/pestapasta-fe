@@ -1,4 +1,4 @@
-import { Add, Diversity1, Remove, Star } from "@mui/icons-material";
+import { Add, Remove, Star } from "@mui/icons-material";
 import { formatToRupiah } from "../../../utills/toRupiah";
 import { Product } from "../../../models/Product";
 import { useState } from "react";
