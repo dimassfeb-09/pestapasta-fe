@@ -72,7 +72,7 @@ export default function CardMenuCheckout({
       <div className="flex flex-col items-center justify-center">
         <img
           src={product.image_url}
-          className="rounded-lg max-w-32 max-h-32"
+          className="rounded-lg min-w-28 min-h-28 max-w-28 max-h-28"
           alt={product.name}
           draggable={false}
         />

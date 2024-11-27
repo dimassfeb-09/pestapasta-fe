@@ -3,36 +3,66 @@ import { formatToRupiah } from "../../utills/toRupiah";
 import CardMenuCheckout from "./components/CardMenuCheckout";
 import { Product } from "../../models/Product";
 import { CheckoutItem } from "../../models/CheckoutItem";
+import { Link, useNavigate } from "react-router-dom";
+import { ChevronLeft } from "@mui/icons-material";
+import axios from "axios";
+import { PaymentMethod } from "../../models/PaymentMethod";
+import { toast } from "react-toastify";
 
 export default function CheckoutPage() {
+  const navigate = useNavigate();
   const [isPaymentMethodActive, setIsPaymentMethodActive] =
     useState<boolean>(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
-    string | null
-  >(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] =
+    useState<PaymentMethod | null>(null);
   const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
-  const [products, _] = useState<Product[]>([
-    {
-      id: 1,
-      name: "Dimas Sugar Tea with Caramel Smile",
-      description: "Minuman rasa Dimas manis.",
-      rating: 5.0,
-      category_id: 1,
-      price: 10000,
-      image_url:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs2paowiODEqEOJ082fLEWgrlBjvBlGd2GrQ&s",
-    },
-    {
-      id: 2,
-      name: "Vanilla Latte Supreme",
-      description: "Kopi latte dengan rasa vanilla khas.",
-      rating: 4.8,
-      category_id: 2,
-      price: 20000,
-      image_url:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSs2paowiODEqEOJ082fLEWgrlBjvBlGd2GrQ&s",
-    },
-  ]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+
+  useEffect(() => {
+    const storedItems = JSON.parse(
+      localStorage.getItem("checkout_items") || "[]"
+    );
+    if (Array.isArray(storedItems) && storedItems.length > 0) {
+      setCheckoutItems(storedItems);
+    } else {
+      // Redirect if no valid items exist
+      navigate("/");
+    }
+  }, []); // Runs only once when the component mounts
+
+  // Fetch products and their prices from the API
+  useEffect(() => {
+    axios
+      .get("http://localhost:8081/menus")
+      .then((response) => {
+        const fetchedProducts = response.data.map((item: any) => ({
+          id: item.id,
+          name: item.pasta_name,
+          description: item.description,
+          price: item.price,
+          image_url: item.image,
+          category_id: item.category_id,
+          rating: item.rating,
+        }));
+        setProducts(fetchedProducts);
+      })
+      .catch((error) => {
+        console.error("Error fetching menu items:", error);
+      });
+  }, []);
+
+  // Fetch payment methods from the API
+  useEffect(() => {
+    axios
+      .get("http://localhost:8081/payment_methods")
+      .then((response) => {
+        setPaymentMethods(response.data); // Store payment methods in state
+      })
+      .catch((error) => {
+        console.error("Error fetching payment methods:", error);
+      });
+  }, []);
 
   const handleToggle = () => {
     setIsPaymentMethodActive(!isPaymentMethodActive);
@@ -45,15 +75,6 @@ export default function CheckoutPage() {
     setCheckoutItems(updatedItems);
     localStorage.setItem("checkout_items", JSON.stringify(updatedItems));
   };
-
-  useEffect(() => {
-    const storedItems = JSON.parse(
-      localStorage.getItem("checkout_items") || "[]"
-    );
-    if (Array.isArray(storedItems)) {
-      setCheckoutItems(storedItems);
-    }
-  }, []);
 
   const updateLocalStorage = (items: CheckoutItem[]) => {
     localStorage.setItem("checkout_items", JSON.stringify(items));
@@ -95,6 +116,10 @@ export default function CheckoutPage() {
     }, [] as CheckoutItem[]);
 
     updateLocalStorage(updatedItems);
+
+    if (updatedItems.length == 0) {
+      navigate("/");
+    }
   };
 
   const totalAmount = checkoutItems.reduce(
@@ -104,33 +129,50 @@ export default function CheckoutPage() {
 
   const finalPrice = totalAmount * 1.1;
 
+  const handleButtonOnClick = () => {
+    if (checkoutItems.length == 0) {
+      toast.error("Keranjang kamu masih kosong nih...");
+    } else if (selectedPaymentMethod == null) {
+      toast.error("Kamu belum pilih metode pembayaran nih...");
+    } else {
+      navigate("/confirm_user", {
+        state: { payment: selectedPaymentMethod, checkoutItems: checkoutItems },
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
-      <h2 className="flex items-center justify-center py-4 text-xl font-bold text-primary">
-        Checkout
-      </h2>
+      <div className="px-4 py-3 bg-white">
+        <div className="flex items-center">
+          <ChevronLeft onClick={() => navigate("/")} className="w-6 h-6" />
+          <h1 className="ml-2 text-lg font-medium">Checkout</h1>
+        </div>
+      </div>
 
       <div className="flex flex-col gap-5 px-5 py-3 ">
-        {checkoutItems.map((item) => (
-          <CardMenuCheckout
-            key={item.id}
-            product={{
-              ...item,
-              price:
-                products.find((product) => product.id == item.id)?.price ?? 0,
-              rating:
-                products.find((product) => product.id == item.id)?.rating ?? 0,
-            }}
-            total_item={
-              checkoutItems.find((checkout) => checkout.id == item.id)
-                ?.total_item ?? 0
-            }
-            note={item.note}
-            onNote={(note) => handleNoteChange(item.id, note)}
-            onAdd={handleAddToCheckout}
-            onRemove={handleRemoveFromCheckout}
-          />
-        ))}
+        {checkoutItems.map((item) => {
+          const product = products.find((product) => product.id === item.id);
+          if (!product) return null; // Handle the case where the product isn't found
+          return (
+            <CardMenuCheckout
+              key={item.id}
+              product={{
+                ...item,
+                price: product.price, // Using the fetched price
+                rating: product.rating, // Using the fetched rating
+              }}
+              total_item={
+                checkoutItems.find((checkout) => checkout.id == item.id)
+                  ?.total_item ?? 0
+              }
+              note={item.note}
+              onNote={(note) => handleNoteChange(item.id, note)}
+              onAdd={handleAddToCheckout}
+              onRemove={handleRemoveFromCheckout}
+            />
+          );
+        })}
       </div>
 
       <div className="px-5 py-3">
@@ -168,38 +210,43 @@ export default function CheckoutPage() {
           } transition-all duration-300 ease-in-out w-full cursor-pointer`}
           onClick={handleToggle}
         >
-          {selectedPaymentMethod || "Pilih Metode Pembayaran"}
+          {selectedPaymentMethod?.name || "Pilih Metode Pembayaran"}
         </div>
 
         <div
           className={`overflow-hidden bg-teal-500 rounded-b-lg text-white transition-all duration-500 ease-in-out transform w-full ${
-            isPaymentMethodActive ? "max-h-40 opacity-100" : "max-h-0 opacity-0"
+            isPaymentMethodActive ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
           }`}
           style={{
             transitionProperty: "max-height, opacity, transform",
           }}
         >
+          {/* Payment Methods List */}
           <div
             className={`flex flex-col transition-opacity duration-500 ease-in-out ${
               isPaymentMethodActive ? "opacity-100" : "opacity-0"
             }`}
           >
-            {["BCA", "QRIS", "SEABANK"].map((method) => (
+            {/* Loop through each payment method */}
+            {paymentMethods.map((method) => (
               <div
-                key={method}
-                className="p-3 cursor-pointer hover:bg-teal-300"
+                key={method.id}
+                className="p-3 transition-colors cursor-pointer hover:bg-teal-300"
                 onClick={() => {
-                  setIsPaymentMethodActive(false);
-                  setSelectedPaymentMethod(method);
+                  setIsPaymentMethodActive(false); // Close the dropdown
+                  setSelectedPaymentMethod(method); // Set the selected payment method
                 }}
               >
-                {method}
+                {method.name}
               </div>
             ))}
           </div>
         </div>
 
-        <div className="flex items-center justify-center p-3 mt-5 text-lg font-bold text-white bg-black rounded-full">
+        <div
+          onClick={handleButtonOnClick}
+          className="flex items-center justify-center p-3 mt-5 text-lg font-bold text-white bg-black rounded-full"
+        >
           Pesan Sekarang
         </div>
       </div>

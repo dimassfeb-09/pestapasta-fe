@@ -1,3 +1,6 @@
+import { Bounce, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 interface LayoutProps {
   children: React.ReactNode;
 }
@@ -27,6 +30,25 @@ export default function DefaultLayout({ children }: LayoutProps) {
           </div>
         </div>
       </main>
+
+      <ToastContainer
+        position="top-center"
+        autoClose={1000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+        className="translate-y-10" // This moves the toast container down
+        style={{
+          top: "1em", // Adjust top position as needed
+          padding: "0px 20px",
+        }}
+      />
     </div>
   );
 }

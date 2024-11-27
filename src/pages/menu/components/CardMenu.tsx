@@ -69,7 +69,6 @@ export default function CardMenu({
           className="fixed inset-0 z-10 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50"
           onClick={() => setOnImageClick(false)}
         >
-          {/* Modal Content */}
           <div className="w-[28rem] bg-secondary -translate-y-14">
             {/* Content */}
             <img
