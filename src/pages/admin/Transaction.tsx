@@ -2,6 +2,7 @@ import { RemoveRedEye, Close } from "@mui/icons-material";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { formatToRupiah } from "../../utills/toRupiah";
+import { api } from "../../utills/mode";
 
 export const TransactionTable = () => {
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
@@ -14,7 +15,8 @@ export const TransactionTable = () => {
   useEffect(() => {
     const fetchAllTransactions = async () => {
       try {
-        const data = await axios.get("http://localhost:8081/orders");
+        const apiConfig = api();
+        const data = await axios.get(`${apiConfig.baseURL}/orders`);
         setTransactions(data.data);
       } catch (e) {
         console.log(e);
@@ -52,7 +54,20 @@ export const TransactionTable = () => {
                   <td className="p-4">{transaction.name}</td>
                   <td className="p-4">{transaction.payments.payment_method}</td>
                   <td className="p-4">
-                    <span className="px-3 py-1 text-yellow-800 bg-yellow-100 rounded">
+                    <span
+                      className={`px-3 py-1 rounded 
+                      ${
+                        transaction.order_status === "Pending"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : transaction.order_status === "success"
+                          ? "bg-green-100 text-green-700"
+                          : transaction.order_status === "error"
+                          ? "bg-red-100 text-red-700"
+                          : transaction.order_status === "canceled"
+                          ? "bg-gray-100 text-gray-700"
+                          : ""
+                      }`}
+                    >
                       {transaction.order_status}
                     </span>
                   </td>

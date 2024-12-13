@@ -8,18 +8,19 @@ import { CheckoutItem } from "../../models/CheckoutItem";
 import { Product } from "../../models/Product";
 import { ExpandMore, ExpandLess } from "@mui/icons-material"; // Import arrow icons
 import { toast } from "react-toastify";
+import { api } from "../../utills/mode";
 
 export default function MenuPage() {
   const [isScrolling, setIsScrolling] = useState(false);
   const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
-  const [products, setProducts] = useState<Product[]>([]); // Menu items from the backend
-  const [categories, setCategories] = useState<any[]>([]); // Categories from the backend
-  const [categorizedMenus, setCategorizedMenus] = useState<any>({}); // Categorized menus
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [categorizedMenus, setCategorizedMenus] = useState<any>({});
   const [expandedCategories, setExpandedCategories] = useState<
     Record<string, boolean>
-  >({}); // State for expanded categories
-  const navigate = useNavigate();
+  >({});
   const [shakingButton, setShakingButton] = useState<boolean>(false);
+  const navigate = useNavigate();
 
   // Derived state for total items and total price
   const totalItems = checkoutItems.reduce(
@@ -33,9 +34,9 @@ export default function MenuPage() {
 
   // Fetch the menu and categories from the backend API
   useEffect(() => {
-    // Fetch menu items
+    const apiConfig = api();
     axios
-      .get("http://localhost:8081/menus")
+      .get(`${apiConfig.baseURL}/menus`)
       .then((response) => {
         const fetchedProducts = response.data.map((item: Product) => ({
           id: item.id,
@@ -48,18 +49,12 @@ export default function MenuPage() {
         }));
         setProducts(fetchedProducts);
       })
-      .catch((error) => {
-        console.error("Error fetching menu items:", error);
-      });
+      .catch((error) => console.error("Error fetching menu items:", error));
 
     axios
-      .get("http://localhost:8081/categories")
-      .then((response) => {
-        setCategories(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching categories:", error);
-      });
+      .get(`${apiConfig.baseURL}/categories`)
+      .then((response) => setCategories(response.data))
+      .catch((error) => console.error("Error fetching categories:", error));
   }, []);
 
   // Classify menus based on category_id
@@ -74,7 +69,6 @@ export default function MenuPage() {
       }, {});
       setCategorizedMenus(categorized);
 
-      // Set the first category as expanded by default
       if (categories.length > 0) {
         const defaultExpandedCategory = categories[0].category_name;
         setExpandedCategories((prev) => ({
@@ -149,7 +143,6 @@ export default function MenuPage() {
       setShakingButton(true);
       toast.error("Keranjang kamu masih kosong nih...");
 
-      // Reset the shaking button after the animation (500ms based on the shake animation duration)
       setTimeout(() => {
         setShakingButton(false);
       }, 1000); // 500ms is the duration of the shake animation
@@ -167,7 +160,6 @@ export default function MenuPage() {
       <div className="flex flex-col flex-grow gap-5 px-5 py-3 pb-20">
         {Object.keys(categorizedMenus).map((categoryName) => (
           <div key={categoryName}>
-            {/* Category title that is clickable */}
             <div
               className="flex items-center mb-4 font-bold cursor-pointer"
               onClick={() => handleCategoryToggle(categoryName)}
@@ -179,16 +171,13 @@ export default function MenuPage() {
               >
                 {categoryName.toUpperCase()}
               </span>
-
-              {/* Arrow icon */}
               {expandedCategories[categoryName] ? (
-                <ExpandLess className="ml-2 text-primary" />
+                <ExpandLess className="ml-2 text-teal-500" />
               ) : (
                 <ExpandMore className="ml-2 text-primary" />
               )}
             </div>
 
-            {/* Show products under the category if expanded */}
             {expandedCategories[categoryName] && (
               <div className="flex flex-col gap-3">
                 {categorizedMenus[categoryName].map((product: Product) => (

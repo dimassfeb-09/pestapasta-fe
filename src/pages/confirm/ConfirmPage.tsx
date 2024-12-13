@@ -5,6 +5,8 @@ import { PaymentMethod } from "../../models/PaymentMethod";
 import { CheckoutItem } from "../../models/CheckoutItem";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { CheckoutResponse } from "../../models/CheckoutResponse";
+import { api } from "../../utills/mode";
 
 export default function ConfirmPage() {
   const location = useLocation();
@@ -14,6 +16,8 @@ export default function ConfirmPage() {
 
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!payment) {
@@ -26,10 +30,11 @@ export default function ConfirmPage() {
     const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     return regex.test(email);
   };
-
-  // Validation logic
   const handleSubmit = async (e: React.MouseEvent) => {
     e.preventDefault();
+
+    setIsLoading(true);
+
     if (!name || !email) {
       toast.error("Nama dan Email harus diisi.");
       return;
@@ -51,8 +56,9 @@ export default function ConfirmPage() {
     };
 
     try {
-      const data = await axios.post(
-        "http://localhost:8081/checkout",
+      const apiConfig = api();
+      const { data } = await axios.post<CheckoutResponse>(
+        `${apiConfig.baseURL}/checkout`,
         requestData,
         {
           headers: {
@@ -61,25 +67,19 @@ export default function ConfirmPage() {
         }
       );
 
-      const transaction = data.data;
+      const orderId = data.data.order_id;
 
       localStorage.clear();
 
-      navigate("/payment", {
-        state: {
-          payment,
-          products: checkoutItems,
-          name,
-          email,
-          transaction,
-        },
-      });
+      navigate(`/order_detail/${orderId}`);
     } catch (error: any) {
       if (error.response) {
         toast.error(error.response.data.error);
       } else {
         toast.error(error.message);
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -131,9 +131,12 @@ export default function ConfirmPage() {
       {/* Submit Button */}
       <button
         onClick={handleSubmit}
-        className="flex items-center justify-center w-full p-3 text-white rounded-b-md bg-greenTeal hover:bg-green-700"
+        className={`flex items-center justify-center w-full p-3 text-white rounded-b-md bg-greenTeal  ${
+          isLoading ? "bg-gray-400" : "hover:bg-green-700"
+        }`}
+        disabled={isLoading}
       >
-        Kirim Invoice
+        {isLoading ? "Loading..." : "Kirim Invoice"}
       </button>
     </div>
   );

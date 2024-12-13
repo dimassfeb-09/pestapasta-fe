@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import DefaultLayout from "./layout/DefaultLayout";
 import MenuPage from "./pages/menu/MenuPage";
 import CheckoutPage from "./pages/checkout/CheckoutPage";
-import PaymentPage from "./pages/payment/PaymentPage";
+import OrderDetailPage from "./pages/order/OrderDetailPage";
 import ConfirmPage from "./pages/confirm/ConfirmPage";
 import { LoginAdminPage } from "./pages/admin/LoginPage";
 import DefaultLayoutAdmin from "./layout/DefaultLayoutAdmin";
@@ -25,8 +25,8 @@ function App() {
         />
 
         <Route
-          path="/payment"
-          element={<DefaultLayout children={<PaymentPage />} />}
+          path="/order_detail/:orderId"
+          element={<DefaultLayout children={<OrderDetailPage />} />}
         />
 
         <Route

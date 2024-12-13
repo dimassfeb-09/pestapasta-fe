@@ -33,7 +33,7 @@ export default function DefaultLayout({ children }: LayoutProps) {
 
       <ToastContainer
         position="top-center"
-        autoClose={1000}
+        autoClose={2500}
         hideProgressBar={false}
         newestOnTop={false}
         closeOnClick
@@ -46,7 +46,7 @@ export default function DefaultLayout({ children }: LayoutProps) {
         className="translate-y-10" // This moves the toast container down
         style={{
           top: "1em", // Adjust top position as needed
-          padding: "0px 20px",
+          padding: "0px 5px",
         }}
       />
     </div>

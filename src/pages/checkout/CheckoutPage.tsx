@@ -8,6 +8,7 @@ import { ChevronLeft } from "@mui/icons-material";
 import axios from "axios";
 import { PaymentMethod } from "../../models/PaymentMethod";
 import { toast } from "react-toastify";
+import { api } from "../../utills/mode";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -33,8 +34,9 @@ export default function CheckoutPage() {
 
   // Fetch products and their prices from the API
   useEffect(() => {
+    const apiConfig = api();
     axios
-      .get("http://localhost:8081/menus")
+      .get(`${apiConfig.baseURL}/menus`)
       .then((response) => {
         const fetchedProducts = response.data.map((item: any) => ({
           id: item.id,
@@ -54,8 +56,9 @@ export default function CheckoutPage() {
 
   // Fetch payment methods from the API
   useEffect(() => {
+    const apiConfig = api();
     axios
-      .get("http://localhost:8081/payment_methods")
+      .get(`${apiConfig.baseURL}/payment_methods`)
       .then((response) => {
         setPaymentMethods(response.data); // Store payment methods in state
       })
@@ -245,7 +248,7 @@ export default function CheckoutPage() {
 
         <div
           onClick={handleButtonOnClick}
-          className="flex items-center justify-center p-3 mt-5 text-lg font-bold text-white bg-black rounded-full"
+          className="flex cursor-pointer items-center justify-center p-3 mt-5 text-lg font-bold text-white bg-black rounded-full"
         >
           Pesan Sekarang
         </div>
