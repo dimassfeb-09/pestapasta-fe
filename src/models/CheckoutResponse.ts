@@ -4,5 +4,6 @@ export type CheckoutResponse = {
   code: number;
   data: {
     order_id: number;
+    transaction_code: string;
   };
 };

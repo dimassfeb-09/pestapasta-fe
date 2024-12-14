@@ -27,7 +27,7 @@ type Payment = {
   payment_expired_date: string;
   payment_account_number?: string;
   payment_account_name?: string;
-  payment_qrcode_url?: string;
+  payment_qr_code_url?: string;
   transaction_code: string;
 };
 

@@ -55,6 +55,8 @@ export default function ConfirmPage() {
       payment_method_id: payment.id,
     };
 
+    console.log(requestData);
+
     try {
       const apiConfig = api();
       const { data } = await axios.post<CheckoutResponse>(

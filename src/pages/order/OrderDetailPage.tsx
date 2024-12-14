@@ -1,94 +1,121 @@
 import { useEffect, useState } from "react";
 import { formatToRupiah } from "../../utills/toRupiah";
-import { Close, QuestionMarkRounded } from "@mui/icons-material";
+import { Close, FileCopy, QuestionMarkRounded } from "@mui/icons-material";
 import { OrderResponse } from "../../models/OrderDetail";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { api } from "../../utills/mode";
+import LoadingSpinner from "../../components/LoadingSpinnerv";
+import OrderNotFoundCard from "./components/OrderNotFoundCard";
 
 export default function PaymentPage() {
   const { orderId } = useParams();
-
   const [showDialog, setShowDialog] = useState(false);
-  const [isPolling, setIsPolling] = useState(false);
   const [orderDetail, setOrderDetail] = useState<OrderResponse | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const [pollingCount, setPollingCount] = useState(0);
+  const [isPolling, setIsPolling] = useState(false);
+  const [isPaymentExpired, setIsPaymentExpired] = useState(false);
 
   const handleConfirmPayment = () => {
+    setPollingCount(0); // Reset polling count
     setIsPolling(true);
   };
 
   useEffect(() => {
     let intervalId: any;
-    let count = 0; // Menyimpan jumlah polling
-    let startTime = Date.now(); // Menyimpan waktu mulai polling
 
     const fetchOrderStatus = async () => {
       try {
         const apiConfig = api();
-
         const response = await axios.get(
           `${apiConfig.baseURL}/orders/${orderId}/status`
         );
         const data = response.data;
 
-        if (data.order_status !== "pending") {
-          setIsPolling(false);
+        setOrderDetail((prev) => {
+          if (!prev) return null;
+          return {
+            ...prev,
+            order_status: data.order_status,
+            payments: {
+              ...prev.payments,
+              payment_status: data.order_status,
+            },
+          };
+        });
+
+        if (data.order_status === "pending") {
+          return; // Continue polling
         }
 
-        if (data.order_status == "success") {
+        // Stop polling if status is not "pending"
+        setIsPolling(false);
+        if (intervalId) clearInterval(intervalId);
+
+        if (data.order_status === "success") {
           toast.success("Pembayaran berhasil dilakukan, maaci!!");
-        }
-
-        setOrderDetail((prev) => ({
-          ...prev,
-          id: prev!.id,
-          order_date: prev!.order_date,
-          email: prev!.email,
-          name: prev!.name,
-          total_price: prev!.total_price,
-          order_status: data.order_status,
-          payments: {
-            ...prev!.payments,
-            payment_status: data.order_status,
-          },
-          order_details: prev!.order_details,
-        }));
-
-        count++;
-        if (count >= 6 || Date.now() - startTime >= 100000) {
-          toast.warning(
-            "Mohon maaf pembayaran belum kami terima, apabila sudah melakukan pembayaran harap hubungi customer service kami melalui email support@pestapasta.com."
-          );
-          setIsPolling(false);
+        } else {
+          toast.info(`Status pembayaran: ${data.order_status}`);
         }
       } catch (error) {
         console.error("Error fetching order status:", error);
+        setIsPolling(false);
+        if (intervalId) clearInterval(intervalId);
       }
     };
 
     if (isPolling) {
-      fetchOrderStatus(); // Panggil pertama kali tanpa menunggu interval
+      fetchOrderStatus();
 
-      // Mulai interval untuk polling setiap 10 detik
-      intervalId = setInterval(fetchOrderStatus, 10000);
+      intervalId = setInterval(() => {
+        fetchOrderStatus();
+        setPollingCount((prevCount) => {
+          const newCount = prevCount + 1;
+
+          if (newCount >= 3) {
+            toast.warning(
+              "Mohon maaf pembayaran belum kami terima, apabila sudah melakukan pembayaran harap hubungi customer service kami melalui whatsapp +621234512312"
+            );
+            setIsPolling(false);
+            clearInterval(intervalId);
+          }
+
+          return newCount;
+        });
+      }, 10000); // Polling every 10 seconds
     }
 
     return () => {
-      clearInterval(intervalId); // Bersihkan interval saat komponen dibersihkan
+      if (intervalId) clearInterval(intervalId);
     };
-  }, [isPolling]); // Dependency untuk memulai ulang useEffect saat isPolling berubah
+  }, [isPolling, pollingCount, orderId]);
 
   const fetchOrderDetail = async () => {
+    setIsLoading(true);
     try {
       const apiConfig = api();
-
       const response = await axios.get(
         `${apiConfig.baseURL}/orders/${orderId}`
       );
       setOrderDetail(response.data);
-    } catch (e) {
-      console.log("FAIL TO FETCH DATA " + e);
+      handleIsPaymentExpired(response.data.payments?.payment_expired_date);
+    } catch (e: any) {
+      if (e.status === 404) {
+        setOrderDetail(null);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleIsPaymentExpired = (payment_expired_date: string) => {
+    if (payment_expired_date) {
+      const paymentExpiredDate = new Date(payment_expired_date);
+      const now = new Date();
+      setIsPaymentExpired(now > paymentExpiredDate);
     }
   };
 
@@ -103,25 +130,47 @@ export default function PaymentPage() {
 
   const handleDialogToggle = () => setShowDialog((prev) => !prev);
 
+  const savePaymentLink = () => {
+    if (orderDetail) {
+      const paymentLink = `${window.location.origin}/order_detail/${orderId}`;
+      navigator.clipboard
+        .writeText(paymentLink)
+        .then(() => {
+          toast.success("Link pembayaran berhasil disalin!");
+        })
+        .catch(() => {
+          toast.error("Gagal menyalin link pembayaran.");
+        });
+    }
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
+  if (orderDetail == null && !isLoading) {
+    return <OrderNotFoundCard orderId={orderId ?? "0"} />;
+  }
+
   return (
-    <div className="flex flex-col p-6 bg-gray-100 min-h-screen">
+    <div className="flex flex-col min-h-screen p-6 bg-gray-100">
       <div className="space-y-6">
         {/* Payment Details */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+        <div className="p-6 bg-white rounded-lg shadow-md">
+          <h2 className="mb-4 text-2xl font-semibold text-gray-700">
             Detail Pembayaran
           </h2>
 
           {orderDetail?.payments.payment_method === "QRIS" &&
           orderDetail?.payments.payment_status !== "success" ? (
             <div>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className="mb-4 text-sm text-gray-600">
                 Pastikan jumlah yang dibayarkan sesuai dengan total yang tertera
                 di bawah ini.
               </p>
-              <div className="flex flex-col justify-center items-center h-full">
+              <div className="flex flex-col items-center justify-center h-full">
                 <img
-                  src={orderDetail?.payments.payment_qrcode_url}
+                  src={orderDetail?.payments.payment_qr_code_url}
                   alt="QRIS"
                   className="max-w-36 max-h-36"
                   draggable={false}
@@ -135,23 +184,23 @@ export default function PaymentPage() {
               {orderDetail?.payments.payment_method !== "QRIS" && (
                 <>
                   <tr>
-                    <td className="font-medium text-gray-600 px-4 py-2">
+                    <td className="px-4 py-2 font-medium text-gray-600">
                       Nomor Rekening
                     </td>
-                    <td className="font-bold px-4 py-2">
+                    <td className="px-4 py-2 font-bold">
                       {orderDetail?.payments.payment_account_number}
                     </td>
                   </tr>
                   <tr>
-                    <td className="font-medium text-gray-600 px-4 py-2">
+                    <td className="px-4 py-2 font-medium text-gray-600">
                       Atas Nama
                     </td>
-                    <td className="font-bold px-4 py-2">
+                    <td className="px-4 py-2 font-bold">
                       {orderDetail?.payments.payment_account_name}
                     </td>
                   </tr>
                   <tr>
-                    <td className="flex items-center gap-2 font-medium text-gray-600 px-4 py-2">
+                    <td className="flex items-center gap-2 px-4 py-2 font-medium text-gray-600">
                       <p>Keterangan Berita</p>
                       <p
                         className="text-sm cursor-pointer"
@@ -163,7 +212,7 @@ export default function PaymentPage() {
                         />
                       </p>
                     </td>
-                    <td className="font-bold px-4 py-2">
+                    <td className="px-4 py-2 font-bold">
                       {orderDetail?.payments.transaction_code}
                     </td>
                   </tr>
@@ -171,35 +220,31 @@ export default function PaymentPage() {
               )}
 
               <tr>
-                <td className="font-medium text-gray-600 px-4 py-2">
-                  Metode Pembayaran
+                <td className="px-4 py-2 font-medium text-gray-600">
+                  Order ID
                 </td>
-                <td className="font-bold px-4 py-2">
-                  {orderDetail?.payments.payment_method}
-                </td>
-              </tr>
-
-              {/* Countdown Timer */}
-              <tr>
-                <td className="font-medium text-gray-600 px-4 py-2">
-                  Batas Waktu Pembayaran
-                </td>
-                <td className="font-bold px-4 py-2">
-                  {orderDetail?.payments.payment_expired_date}
+                <td className="px-4 py-2 font-bold">
+                  <div className=" bg-red-500 rounded-md px-2 py-1 text-white h-max w-max">
+                    {orderDetail?.id}
+                  </div>
                 </td>
               </tr>
 
               <tr>
-                <td className="font-medium text-gray-600 px-4 py-2">Status</td>
-                <td className="font-bold px-4 py-2">
+                <td className="px-4 py-2 font-medium text-gray-600">Status</td>
+                <td className="px-4 py-2 font-bold">
                   <div
                     className={`px-2 py-1 w-max font-bold text-white rounded-md ${
-                      orderDetail?.payments?.payment_status === "success"
-                        ? "bg-greenTeal"
-                        : orderDetail?.payments?.payment_status === "canceled"
-                        ? "bg-red-500"
-                        : orderDetail?.payments?.payment_status === "pending"
-                        ? "bg-yellow-500"
+                      orderDetail?.payments?.payment_status
+                        ? {
+                            success: "bg-greenTeal",
+                            canceled: "bg-red-500",
+                            pending: "bg-yellow-500",
+                            authorize: "bg-blue-500",
+                            expired: "bg-orange-500",
+                            failure: "bg-black",
+                            unknown: "bg-gray-400",
+                          }[orderDetail.payments.payment_status]
                         : "bg-gray-400"
                     }`}
                   >
@@ -207,28 +252,75 @@ export default function PaymentPage() {
                   </div>
                 </td>
               </tr>
+
+              <tr>
+                <td className="px-4 py-2 font-medium text-gray-600">
+                  Metode Pembayaran
+                </td>
+                <td className="px-4 py-2 font-bold">
+                  {orderDetail?.payments.payment_method}
+                </td>
+              </tr>
+
+              <tr>
+                <td className="px-4 py-2 font-medium text-gray-600">
+                  Transaksi Dibuat
+                </td>
+                <td className="px-4 py-2 font-bold">
+                  {orderDetail?.payments.payment_create_date}
+                </td>
+              </tr>
+
+              {/* Countdown Timer */}
+              <tr>
+                <td className="px-4 py-2 font-medium text-gray-600">
+                  Batas Waktu Pembayaran
+                </td>
+                <td className="px-4 py-2 font-bold">
+                  {orderDetail?.payments.payment_expired_date}
+                </td>
+              </tr>
             </tbody>
           </table>
 
-          {orderDetail?.payments.payment_status == "pending" && (
+          {orderDetail?.payments.payment_status === "pending" && (
             <div className="mt-6">
               <button
                 onClick={handleConfirmPayment}
                 className={`w-full py-3 text-white font-semibold rounded-lg ${
-                  isPolling ? "bg-gray-200" : "bg-teal-600 hover:bg-teal-700"
+                  isPaymentExpired
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : isPolling
+                    ? "bg-gray-400"
+                    : "bg-teal-500 hover:bg-teal-500/80"
                 } transition`}
+                disabled={isPaymentExpired || isPolling}
               >
                 {isPolling
-                  ? "Tunggu yaa, lagi ngecek pembayaran kamu..."
+                  ? `Tunggu yaa, lagi ngecek pembayaran kamu...`
                   : "Konfirmasi Pembayaran"}
+              </button>
+              {isPaymentExpired && (
+                <p className="mt-2 text-red-600 text-sm">
+                  Maaf, pembayaran sudah kedaluwarsa. Silakan membuat transaksi
+                  baru.
+                </p>
+              )}
+
+              <button
+                onClick={savePaymentLink}
+                className={`w-full py-3 text-white font-semibold rounded-lg mt-3 bg-primary hover:bg-primary/70`}
+              >
+                <FileCopy className="text-white" />
+                Salin Link Pembayaran
               </button>
             </div>
           )}
         </div>
 
         {/* Customer Details */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+        <div className="p-6 bg-white rounded-lg shadow-md">
+          <h2 className="mb-4 text-2xl font-semibold text-gray-700">
             Detail Pemesan
           </h2>
           <div className="flex justify-between mb-3">
@@ -240,8 +332,8 @@ export default function PaymentPage() {
         </div>
 
         {/* Product Summary */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+        <div className="p-6 bg-white rounded-lg shadow-md">
+          <h2 className="mb-4 text-2xl font-semibold text-gray-700">
             Ringkasan Produk
           </h2>
           {orderDetail?.order_details.map((product) => (
@@ -264,14 +356,17 @@ export default function PaymentPage() {
                     {formatToRupiah(product.subtotal_price)}
                   </p>
                 </div>
+                <p className="text-sm text-gray-500 truncate">
+                  Catatan: {product.notes}
+                </p>
               </div>
             </div>
           ))}
         </div>
 
         {/* Price Details */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-semibold text-gray-700 mb-4">
+        <div className="p-6 bg-white rounded-lg shadow-md">
+          <h2 className="mb-4 text-2xl font-semibold text-gray-700">
             Detail Harga
           </h2>
           {orderDetail?.order_details.map((item, index) => (
@@ -304,25 +399,23 @@ export default function PaymentPage() {
 
 const DialogTransactionCode = ({ onClose }: { onClose: () => void }) => {
   return (
-    <div className="fixed top-0 left-0 right-0 bottom-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
-      <div className="relative p-6 m-4 bg-white rounded-lg max-w-sm w-full">
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
-        >
-          <Close />
-        </button>
-
-        {/* Content */}
-        <h3 className="text-lg font-semibold mb-4">
-          Apa itu keterangan berita?
-        </h3>
-        <img
-          src="assets/apa_itu_kode_transaksijpg.jpg"
-          alt="Apa itu keterangan berita"
-          className="w-full rounded-lg"
-        />
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-semibold">Kode Transaksi</h3>
+          <Close onClick={onClose} className="cursor-pointer" />
+        </div>
+        <p className="mt-4 text-gray-600">
+          Pastikan Anda menyertakan kode transaksi saat melakukan pembayaran.
+        </p>
+        <div className="mt-6 flex justify-center">
+          <button
+            className="px-4 py-2 text-white bg-primary rounded-lg"
+            onClick={onClose}
+          >
+            Tutup
+          </button>
+        </div>
       </div>
     </div>
   );
