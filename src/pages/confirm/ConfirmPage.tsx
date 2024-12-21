@@ -73,7 +73,9 @@ export default function ConfirmPage() {
 
       localStorage.clear();
 
-      navigate(`/order_detail/${orderId}`);
+      if (data.code == 200) {
+        navigate(`/order_detail/${orderId}`);
+      }
     } catch (error: any) {
       if (error.response) {
         toast.error(error.response.data.error);

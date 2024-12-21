@@ -1,4 +1,4 @@
-const API_LOCAL = import.meta.env.VITE_ENDPOINT_BACKEND_LOCAL;
+// const API_LOCAL = import.meta.env.VITE_ENDPOINT_BACKEND_LOCAL;
 const API_PRODUCTION = import.meta.env.VITE_ENDPOINT_BACKEND_PRODUCTION;
 
 interface API {
@@ -6,8 +6,7 @@ interface API {
 }
 
 export const api = (): API => {
-  const baseURL =
-    import.meta.env.MODE === "production" ? API_PRODUCTION : API_LOCAL;
+  const baseURL = API_PRODUCTION;
 
   return {
     baseURL,
