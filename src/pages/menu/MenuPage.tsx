@@ -3,7 +3,7 @@ import axios from "axios";
 import { formatToRupiah } from "../../utills/toRupiah";
 import CardMenu from "./components/CardMenu";
 import { ShoppingCart } from "@mui/icons-material";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { CheckoutItem } from "../../models/CheckoutItem";
 import { Product } from "../../models/Product";
 import { ExpandMore, ExpandLess } from "@mui/icons-material"; // Import arrow icons
@@ -11,7 +11,7 @@ import { toast } from "react-toastify";
 import { api } from "../../utills/mode";
 
 export default function MenuPage() {
-  const [isScrolling, setIsScrolling] = useState(false);
+  const [isScrolling, _] = useState(false);
   const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<any[]>([]);

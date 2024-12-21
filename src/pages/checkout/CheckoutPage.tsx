@@ -3,7 +3,7 @@ import { formatToRupiah } from "../../utills/toRupiah";
 import CardMenuCheckout from "./components/CardMenuCheckout";
 import { Product } from "../../models/Product";
 import { CheckoutItem } from "../../models/CheckoutItem";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft } from "@mui/icons-material";
 import axios from "axios";
 import { PaymentMethod } from "../../models/PaymentMethod";
@@ -248,7 +248,7 @@ export default function CheckoutPage() {
 
         <div
           onClick={handleButtonOnClick}
-          className="flex cursor-pointer items-center justify-center p-3 mt-5 text-lg font-bold text-white bg-black rounded-full"
+          className="flex items-center justify-center p-3 mt-5 text-lg font-bold text-white bg-black rounded-full cursor-pointer"
         >
           Pesan Sekarang
         </div>
