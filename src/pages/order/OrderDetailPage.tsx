@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import { api } from "../../utills/mode";
 import LoadingSpinner from "../../components/LoadingSpinnerv";
 import OrderNotFoundCard from "./components/OrderNotFoundCard";
+import CountdownTimer from "./components/CountDownTimer";
 
 export default function PaymentPage() {
   const { orderId } = useParams();
@@ -224,7 +225,7 @@ export default function PaymentPage() {
                   Order ID
                 </td>
                 <td className="px-4 py-2 font-bold">
-                  <div className=" bg-red-500 rounded-md px-2 py-1 text-white h-max w-max">
+                  <div className="px-2 py-1 text-white bg-red-500 rounded-md h-max w-max">
                     {orderDetail?.id}
                   </div>
                 </td>
@@ -280,6 +281,19 @@ export default function PaymentPage() {
                   {orderDetail?.payments.payment_expired_date}
                 </td>
               </tr>
+
+              <tr>
+                <td className="px-4 py-2 font-medium text-gray-600">
+                  Sisa Waktu Pembayaran
+                </td>
+                <td className="px-4 py-2 font-bold">
+                  <CountdownTimer
+                    paymentExpiredDate={
+                      orderDetail?.payments.payment_expired_date || ""
+                    }
+                  />
+                </td>
+              </tr>
             </tbody>
           </table>
 
@@ -301,7 +315,7 @@ export default function PaymentPage() {
                   : "Konfirmasi Pembayaran"}
               </button>
               {isPaymentExpired && (
-                <p className="mt-2 text-red-600 text-sm">
+                <p className="mt-2 text-sm text-red-600">
                   Maaf, pembayaran sudah kedaluwarsa. Silakan membuat transaksi
                   baru.
                 </p>
@@ -400,17 +414,17 @@ export default function PaymentPage() {
 const DialogTransactionCode = ({ onClose }: { onClose: () => void }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
-        <div className="flex justify-between items-center">
+      <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-md">
+        <div className="flex items-center justify-between">
           <h3 className="text-xl font-semibold">Kode Transaksi</h3>
           <Close onClick={onClose} className="cursor-pointer" />
         </div>
         <p className="mt-4 text-gray-600">
           Pastikan Anda menyertakan kode transaksi saat melakukan pembayaran.
         </p>
-        <div className="mt-6 flex justify-center">
+        <div className="flex justify-center mt-6">
           <button
-            className="px-4 py-2 text-white bg-primary rounded-lg"
+            className="px-4 py-2 text-white rounded-lg bg-primary"
             onClick={onClose}
           >
             Tutup
