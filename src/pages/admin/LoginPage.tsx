@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { api } from "../../utills/mode";
 import Cookies from "js-cookie";
@@ -14,6 +14,13 @@ export const LoginAdminPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const access_token = Cookies.get("access_token"); // Get token from cookies
+    if (access_token) {
+      navigate("/admin/transaction");
+    }
+  }, []);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();

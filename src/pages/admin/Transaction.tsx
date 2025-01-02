@@ -4,19 +4,24 @@ import { useEffect, useState } from "react";
 import { formatToRupiah } from "../../utills/toRupiah";
 import { api } from "../../utills/mode";
 import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 export const TransactionTable = () => {
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
   const [selectedOrderDetail, setSelectedOrderDetail] = useState<any | null>(
     null
   );
-
   const [transactions, setTransactions] = useState<any[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const access_token = Cookies.get("access_token"); // Get token from cookies
+    if (!access_token) {
+      navigate("/admin/login");
+    }
+
     const fetchAllTransactions = async () => {
       try {
-        const access_token = Cookies.get("access_token"); // Get token from cookies
         if (!access_token) {
           console.error("No access token found.");
           return;
