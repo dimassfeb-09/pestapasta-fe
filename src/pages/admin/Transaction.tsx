@@ -3,6 +3,7 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { formatToRupiah } from "../../utills/toRupiah";
 import { api } from "../../utills/mode";
+import Cookies from "js-cookie";
 
 export const TransactionTable = () => {
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
@@ -15,11 +16,22 @@ export const TransactionTable = () => {
   useEffect(() => {
     const fetchAllTransactions = async () => {
       try {
-        const apiConfig = api();
-        const data = await axios.get(`${apiConfig.baseURL}/orders`);
-        setTransactions(data.data);
+        const access_token = Cookies.get("access_token"); // Get token from cookies
+        if (!access_token) {
+          console.error("No access token found.");
+          return;
+        }
+
+        const apiConfig = api(); // Assuming this is defined elsewhere
+        const response = await axios.get(`${apiConfig.baseURL}/orders`, {
+          headers: {
+            Authorization: `Bearer ${access_token}`, // Add token to headers
+          },
+        });
+
+        setTransactions(response.data); // Update transactions state with fetched data
       } catch (e) {
-        console.log(e);
+        console.error("Error fetching transactions:", e);
       }
     };
 
@@ -55,20 +67,24 @@ export const TransactionTable = () => {
                   <td className="p-4">{transaction.payments.payment_method}</td>
                   <td className="p-4">
                     <span
-                      className={`px-3 py-1 rounded 
-                      ${
-                        transaction.order_status === "Pending"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : transaction.order_status === "success"
-                          ? "bg-green-100 text-green-700"
-                          : transaction.order_status === "error"
-                          ? "bg-red-100 text-red-700"
-                          : transaction.order_status === "canceled"
-                          ? "bg-gray-100 text-gray-700"
-                          : ""
-                      }`}
+                      className={`px-3 py-1 text-sm font-bold rounded 
+                        ${
+                          (
+                            transaction.order_status ?? "unknown"
+                          ).toLowerCase() === "pending"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : transaction.order_status === "success"
+                            ? "bg-green-100 text-green-700"
+                            : ["error", "expired"].includes(
+                                transaction.order_status
+                              )
+                            ? "bg-red-100 text-red-700"
+                            : transaction.order_status === "canceled"
+                            ? "bg-gray-100 text-gray-700"
+                            : ""
+                        }`}
                     >
-                      {transaction.order_status}
+                      {transaction.order_status.toUpperCase()}
                     </span>
                   </td>
                   <td className="p-4">
@@ -82,9 +98,6 @@ export const TransactionTable = () => {
                         className="p-2 bg-yellow-400 rounded"
                       >
                         <RemoveRedEye className="w-4 h-4" />
-                      </button>
-                      <button className="px-3 py-1 text-white bg-red-500 rounded">
-                        Ubah Status
                       </button>
                     </div>
                   </td>
