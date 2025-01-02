@@ -282,18 +282,20 @@ export default function PaymentPage() {
                 </td>
               </tr>
 
-              <tr>
-                <td className="px-4 py-2 font-medium text-gray-600">
-                  Sisa Waktu Pembayaran
-                </td>
-                <td className="px-4 py-2 font-bold">
-                  <CountdownTimer
-                    paymentExpiredDate={
-                      orderDetail?.payments.payment_expired_date || ""
-                    }
-                  />
-                </td>
-              </tr>
+              {orderDetail?.payments.payment_status == "pending" && (
+                <tr>
+                  <td className="px-4 py-2 font-medium text-gray-600">
+                    Sisa Waktu Pembayaran
+                  </td>
+                  <td className="px-4 py-2 font-bold">
+                    <CountdownTimer
+                      paymentExpiredDate={
+                        orderDetail?.payments.payment_expired_date || ""
+                      }
+                    />
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
 

@@ -15,7 +15,7 @@ export const TransactionTable = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const access_token = Cookies.get("access_token"); // Get token from cookies
+    const access_token = Cookies.get("access_token");
     if (!access_token) {
       navigate("/admin/login");
     }
