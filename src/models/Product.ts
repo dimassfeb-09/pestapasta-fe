@@ -6,4 +6,5 @@ export interface Product {
   category_id: number;
   image_url: string;
   rating: number;
+  is_available: boolean;
 }

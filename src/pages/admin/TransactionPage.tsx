@@ -6,7 +6,7 @@ import { api } from "../../utills/mode";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
-export const TransactionTable = () => {
+export const TransactionPage = () => {
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
   const [selectedOrderDetail, setSelectedOrderDetail] = useState<any | null>(
     null

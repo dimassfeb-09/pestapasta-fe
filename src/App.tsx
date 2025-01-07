@@ -6,7 +6,13 @@ import OrderDetailPage from "./pages/order/OrderDetailPage";
 import ConfirmPage from "./pages/confirm/ConfirmPage";
 import { LoginAdminPage } from "./pages/admin/LoginPage";
 import DefaultLayoutAdmin from "./layout/DefaultLayoutAdmin";
-import { TransactionTable } from "./pages/admin/Transaction";
+import { TransactionPage } from "./pages/admin/TransactionPage";
+import ProductPage from "./pages/admin/product/ProductPage";
+import AddProductPage from "./pages/admin/product/AddProductPage";
+import CategoryPage from "./pages/admin/category/CategoryPage";
+import AddCategoryPage from "./pages/admin/category/AddCategoryPage";
+import UpdateProductPage from "./pages/admin/product/UpdateProductPage";
+import UpdateCategoryPage from "./pages/admin/category/UpdateCategoryPage";
 
 function App() {
   return (
@@ -36,7 +42,37 @@ function App() {
 
         <Route
           path="/admin/transaction"
-          element={<DefaultLayoutAdmin children={<TransactionTable />} />}
+          element={<DefaultLayoutAdmin children={<TransactionPage />} />}
+        />
+
+        <Route
+          path="/admin/product"
+          element={<DefaultLayoutAdmin children={<ProductPage />} />}
+        />
+
+        <Route
+          path="/admin/product/add"
+          element={<DefaultLayoutAdmin children={<AddProductPage />} />}
+        />
+
+        <Route
+          path="/admin/product/:id/edit"
+          element={<DefaultLayoutAdmin children={<UpdateProductPage />} />}
+        />
+
+        <Route
+          path="/admin/categories"
+          element={<DefaultLayoutAdmin children={<CategoryPage />} />}
+        />
+
+        <Route
+          path="/admin/categories/add"
+          element={<DefaultLayoutAdmin children={<AddCategoryPage />} />}
+        />
+
+        <Route
+          path="/admin/categories/:id/edit"
+          element={<DefaultLayoutAdmin children={<UpdateCategoryPage />} />}
         />
       </Routes>
     </Router>

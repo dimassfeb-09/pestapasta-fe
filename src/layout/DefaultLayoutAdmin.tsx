@@ -1,7 +1,7 @@
 import { Logout } from "@mui/icons-material";
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -36,6 +36,12 @@ export default function DefaultLayoutAdmin({ children }: LayoutProps) {
             draggable={false}
             className="h-full"
           />
+
+          <div className="flex font-bold text-white gap-14">
+            <Link to="/admin/transaction">Transaksi</Link>
+            <Link to="/admin/product">Menu</Link>
+            <Link to="/admin/categories">Category</Link>
+          </div>
 
           {isLoggedIn && (
             <div
