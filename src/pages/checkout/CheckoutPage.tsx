@@ -164,6 +164,7 @@ export default function CheckoutPage() {
                 ...item,
                 price: product.price, // Using the fetched price
                 rating: product.rating, // Using the fetched rating
+                is_available: product.is_available,
               }}
               total_item={
                 checkoutItems.find((checkout) => checkout.id == item.id)
