@@ -1,4 +1,4 @@
-import { Diversity1, Logout } from "@mui/icons-material";
+import { Logout } from "@mui/icons-material";
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
