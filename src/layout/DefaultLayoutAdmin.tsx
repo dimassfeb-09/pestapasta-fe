@@ -1,4 +1,4 @@
-import { Logout } from "@mui/icons-material";
+import { Diversity1, Logout } from "@mui/icons-material";
 import Cookies from "js-cookie";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -37,11 +37,15 @@ export default function DefaultLayoutAdmin({ children }: LayoutProps) {
             className="h-full"
           />
 
-          <div className="flex font-bold text-white gap-14">
-            <Link to="/admin/transaction">Transaksi</Link>
-            <Link to="/admin/product">Menu</Link>
-            <Link to="/admin/categories">Category</Link>
-          </div>
+          {isLoggedIn && (
+            <div>
+              <div className="flex font-bold text-white gap-14">
+                <Link to="/admin/transaction">Transaksi</Link>
+                <Link to="/admin/product">Menu</Link>
+                <Link to="/admin/categories">Category</Link>
+              </div>
+            </div>
+          )}
 
           {isLoggedIn && (
             <div
