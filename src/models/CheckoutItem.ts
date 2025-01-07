@@ -1,10 +1,7 @@
+import { Product } from "./Product";
+
 export interface CheckoutItem {
-  id: number;
-  name: string;
-  price: number;
-  description: string;
-  category_id: number;
-  image_url: string;
+  product: Product;
   total_item: number;
   note: string;
 }

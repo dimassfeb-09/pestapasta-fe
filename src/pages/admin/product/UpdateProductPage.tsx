@@ -120,7 +120,7 @@ export default function UpdateProductPage() {
                 type="number"
                 placeholder="Masukkan Harga..."
                 className="w-full p-3 border rounded-lg"
-                value={product?.price}
+                value={product?.price || ""}
                 onChange={(e) =>
                   setProduct({ ...product, price: Number(e.target.value) })
                 }

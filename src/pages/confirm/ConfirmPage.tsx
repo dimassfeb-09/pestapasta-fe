@@ -48,7 +48,7 @@ export default function ConfirmPage() {
       name,
       email,
       products: checkoutItems.map((p) => ({
-        id: p.id,
+        id: p.product.id,
         quantity: p.total_item,
         notes: p.note,
       })),

@@ -28,7 +28,7 @@ export default function MenuPage() {
     0
   );
   const totalPrice = checkoutItems.reduce(
-    (acc, item) => acc + item.price * item.total_item,
+    (acc, item) => acc + item.product.price * item.total_item,
     0
   );
 
@@ -38,15 +38,19 @@ export default function MenuPage() {
     axios
       .get(`${apiConfig.baseURL}/menus`)
       .then((response) => {
-        const fetchedProducts = response.data.map((item: Product) => ({
-          id: item.id,
-          name: item.name,
-          description: item.description,
-          price: item.price,
-          image_url: item.image_url,
-          category_id: item.category_id,
-          rating: item.rating,
-        }));
+        const fetchedProducts = response.data
+          .filter((item: Product) => item.is_available)
+          .map((item: Product) => ({
+            id: item.id,
+            name: item.name,
+            description: item.description,
+            price: item.price,
+            image_url: item.image_url,
+            category_id: item.category_id,
+            rating: item.rating,
+            is_available: item.is_available,
+          }));
+
         setProducts(fetchedProducts);
       })
       .catch((error) => console.error("Error fetching menu items:", error));
@@ -95,18 +99,24 @@ export default function MenuPage() {
 
   const handleAddToCheckout = (product: Product) => {
     const updatedItems = [...checkoutItems];
-    const existingItem = updatedItems.find((item) => item.id === product.id);
+    const existingItem = updatedItems.find(
+      (item) => item.product.id === product.id
+    );
 
     if (existingItem) {
       existingItem.total_item += 1;
     } else {
       updatedItems.push({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        description: product.description,
-        category_id: product.category_id,
-        image_url: product.image_url,
+        product: {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          description: product.description,
+          category_id: product.category_id,
+          image_url: product.image_url,
+          is_available: product.is_available,
+          rating: product.rating,
+        },
         total_item: 1,
         note: "",
       });
@@ -117,7 +127,7 @@ export default function MenuPage() {
 
   const handleRemoveFromCheckout = (product: Product) => {
     const updatedItems = checkoutItems.reduce((acc, item) => {
-      if (item.id === product.id) {
+      if (item.product.id === product.id) {
         if (item.total_item > 1) {
           acc.push({ ...item, total_item: item.total_item - 1 });
         }
@@ -184,7 +194,7 @@ export default function MenuPage() {
                   <CardMenu
                     key={product.id}
                     total_item={
-                      checkoutItems.find((v) => v.id === product.id)
+                      checkoutItems.find((v) => v.product.id === product.id)
                         ?.total_item ?? 0
                     }
                     product={product}

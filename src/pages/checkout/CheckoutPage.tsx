@@ -20,63 +20,35 @@ export default function CheckoutPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
-  useEffect(() => {
+  const fetchCheckoutItems = () => {
     const storedItems = JSON.parse(
       localStorage.getItem("checkout_items") || "[]"
     );
     if (Array.isArray(storedItems) && storedItems.length > 0) {
       setCheckoutItems(storedItems);
     } else {
-      // Redirect if no valid items exist
       navigate("/");
     }
-  }, []); // Runs only once when the component mounts
-
-  // Fetch products and their prices from the API
-  useEffect(() => {
-    const apiConfig = api();
-    axios
-      .get(`${apiConfig.baseURL}/menus`)
-      .then((response) => {
-        const fetchedProducts = response.data.map((item: any) => ({
-          id: item.id,
-          name: item.pasta_name,
-          description: item.description,
-          price: item.price,
-          image_url: item.image,
-          category_id: item.category_id,
-          rating: item.rating,
-        }));
-        setProducts(fetchedProducts);
-      })
-      .catch((error) => {
-        console.error("Error fetching menu items:", error);
-      });
-  }, []);
-
-  // Fetch payment methods from the API
-  useEffect(() => {
-    const apiConfig = api();
-    axios
-      .get(`${apiConfig.baseURL}/payment_methods`)
-      .then((response) => {
-        setPaymentMethods(response.data); // Store payment methods in state
-      })
-      .catch((error) => {
-        console.error("Error fetching payment methods:", error);
-      });
-  }, []);
-
-  const handleToggle = () => {
-    setIsPaymentMethodActive(!isPaymentMethodActive);
   };
 
-  const handleNoteChange = (id: number, note: string) => {
-    const updatedItems = checkoutItems.map((item) =>
-      item.id === id ? { ...item, note } : item
-    );
-    setCheckoutItems(updatedItems);
-    localStorage.setItem("checkout_items", JSON.stringify(updatedItems));
+  const fetchAllMenus = async () => {
+    try {
+      const apiConfig = api();
+      const response = await axios.get<Product[]>(`${apiConfig.baseURL}/menus`);
+      setProducts(response.data);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const fetchPaymentMethods = async () => {
+    try {
+      const apiConfig = api();
+      const response = await axios.get(`${apiConfig.baseURL}/payment_methods`);
+      setPaymentMethods(response.data); // Store payment methods in state
+    } catch (error) {
+      console.error("Error fetching payment methods:", error);
+    }
   };
 
   const updateLocalStorage = (items: CheckoutItem[]) => {
@@ -84,31 +56,50 @@ export default function CheckoutPage() {
     setCheckoutItems([...items]);
   };
 
+  const handleToggle = () => {
+    setIsPaymentMethodActive(!isPaymentMethodActive);
+  };
+
+  const handleNoteChange = (id: number, note: string) => {
+    const updatedItems = checkoutItems.map((item) =>
+      item.product.id === id ? { ...item, note } : item
+    );
+    setCheckoutItems(updatedItems);
+    localStorage.setItem("checkout_items", JSON.stringify(updatedItems));
+  };
+
   const handleAddToCheckout = (product: Product) => {
     const updatedItems = [...checkoutItems];
-    const existingItem = updatedItems.find((item) => item.id === product.id);
+    const existingItem = updatedItems.find(
+      (item) => item.product.id === product.id
+    );
 
     if (existingItem) {
       existingItem.total_item += 1;
     } else {
       updatedItems.push({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        description: product.description,
-        category_id: product.category_id,
-        image_url: product.image_url,
+        product: {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          description: product.description,
+          category_id: product.category_id,
+          image_url: product.image_url,
+          is_available: product.is_available,
+          rating: product.rating,
+        },
         total_item: 1,
         note: "",
       });
     }
 
-    updateLocalStorage(updatedItems);
+    localStorage.setItem("checkout_items", JSON.stringify(updatedItems));
+    setCheckoutItems(updatedItems);
   };
 
   const handleRemoveFromCheckout = (product: Product) => {
     const updatedItems = checkoutItems.reduce((acc, item) => {
-      if (item.id === product.id) {
+      if (item.product.id === product.id) {
         if (item.total_item > 1) {
           acc.push({ ...item, total_item: item.total_item - 1 });
         }
@@ -125,13 +116,6 @@ export default function CheckoutPage() {
     }
   };
 
-  const totalAmount = checkoutItems.reduce(
-    (total, item) => total + item.price * item.total_item,
-    0
-  );
-
-  const finalPrice = totalAmount * 1.1;
-
   const handleButtonOnClick = () => {
     if (checkoutItems.length == 0) {
       toast.error("Keranjang kamu masih kosong nih...");
@@ -144,6 +128,18 @@ export default function CheckoutPage() {
     }
   };
 
+  useEffect(() => {
+    fetchAllMenus();
+    fetchPaymentMethods();
+    fetchCheckoutItems();
+  }, []);
+
+  const totalAmount = checkoutItems.reduce(
+    (total, item) => total + item.product.price * item.total_item,
+    0
+  );
+  const finalPrice = totalAmount * 1.1;
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="px-4 py-3 bg-white">
@@ -155,23 +151,26 @@ export default function CheckoutPage() {
 
       <div className="flex flex-col gap-5 px-5 py-3 ">
         {checkoutItems.map((item) => {
-          const product = products.find((product) => product.id === item.id);
-          if (!product) return null; // Handle the case where the product isn't found
+          const product = products.find(
+            (product) => product.id === item.product.id
+          );
+          if (!product) return null;
           return (
             <CardMenuCheckout
-              key={item.id}
+              key={item.product.id}
               product={{
-                ...item,
+                ...item.product,
                 price: product.price, // Using the fetched price
                 rating: product.rating, // Using the fetched rating
                 is_available: product.is_available,
               }}
               total_item={
-                checkoutItems.find((checkout) => checkout.id == item.id)
-                  ?.total_item ?? 0
+                checkoutItems.find(
+                  (checkout) => checkout.product.id == item.product.id
+                )?.total_item ?? 0
               }
               note={item.note}
-              onNote={(note) => handleNoteChange(item.id, note)}
+              onNote={(note) => handleNoteChange(item.product.id, note)}
               onAdd={handleAddToCheckout}
               onRemove={handleRemoveFromCheckout}
             />

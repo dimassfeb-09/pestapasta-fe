@@ -25,8 +25,17 @@ export default function CardMenuCheckout({
   return (
     <div
       key={product.id}
-      className="flex items-center justify-between px-3 py-2 border rounded-md card_makanan"
+      className={`relative flex items-center justify-between px-3 py-2 border rounded-md card_makanan ${
+        !product.is_available ? "opacity-50" : ""
+      }`}
     >
+      {/* Overlay for Out of Stock */}
+      {!product.is_available && (
+        <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-gray-800 bg-opacity-50 rounded-md">
+          <div className="text-lg font-bold text-white">Out of Stock</div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-3">
         <div className="font-bold text-md">{product.name}</div>
         <div className="flex items-center gap-1 px-2 py-1 text-sm text-white bg-black border rounded-lg w-max">
@@ -69,6 +78,7 @@ export default function CardMenuCheckout({
 
         <div>{formatToRupiah(product.price)}</div>
       </div>
+
       <div className="flex flex-col items-center justify-center">
         <img
           src={product.image_url}
@@ -77,9 +87,19 @@ export default function CardMenuCheckout({
           draggable={false}
         />
         <div className="flex items-center justify-center gap-3 px-1 mt-2 border border-black rounded-md text-whitebg-black">
-          <Remove onClick={() => onRemove(product)} />
+          <Remove
+            onClick={() => product.is_available && onRemove(product)}
+            className={`cursor-pointer ${
+              !product.is_available ? "pointer-events-none" : ""
+            }`}
+          />
           <div>{total_item}</div>
-          <Add onClick={() => onAdd(product)} />
+          <Add
+            onClick={() => product.is_available && onAdd(product)}
+            className={`cursor-pointer ${
+              !product.is_available ? "pointer-events-none" : ""
+            }`}
+          />
         </div>
       </div>
     </div>
