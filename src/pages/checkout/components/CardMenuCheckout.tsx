@@ -1,4 +1,4 @@
-import { Add, Check, Delete, Edit, Remove, Star, X } from "@mui/icons-material";
+import { Add, Check, Delete, Edit, Remove, Star } from "@mui/icons-material";
 import { formatToRupiah } from "../../../utills/toRupiah";
 import { Product } from "../../../models/Product";
 import { useState } from "react";
