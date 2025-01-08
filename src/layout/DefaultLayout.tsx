@@ -9,7 +9,7 @@ export default function DefaultLayout({ children }: LayoutProps) {
   return (
     <div>
       {/* Fixed Navbar */}
-      <nav className="fixed top-0 z-10 flex justify-center w-full h-16 p-1 bg-primary">
+      <nav className="fixed top-0 z-50 flex justify-center w-full h-16 p-1 bg-primary">
         <img
           src="assets/logo.svg"
           alt="Logo"

@@ -28,7 +28,7 @@ export default function DefaultLayoutAdmin({ children }: LayoutProps) {
 
   return (
     <div>
-      <nav className="fixed top-0 z-10 flex justify-center w-full h-16 p-1 bg-primary">
+      <nav className="fixed top-0 z-50 flex justify-center w-full h-16 p-1 bg-primary">
         <div className="flex items-center justify-between w-full mx-20">
           <img
             src="../assets/logo.svg"
