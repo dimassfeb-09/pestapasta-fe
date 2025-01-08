@@ -22,7 +22,6 @@ export default function MenuPage() {
   const [shakingButton, setShakingButton] = useState<boolean>(false);
   const navigate = useNavigate();
 
-  // Derived state for total items and total price
   const totalItems = checkoutItems.reduce(
     (acc, item) => acc + item.total_item,
     0
@@ -32,26 +31,18 @@ export default function MenuPage() {
     0
   );
 
-  // Fetch the menu and categories from the backend API
   useEffect(() => {
     const apiConfig = api();
     axios
-      .get(`${apiConfig.baseURL}/menus`)
+      .get<Product[]>(`${apiConfig.baseURL}/menus`)
       .then((response) => {
-        const fetchedProducts = response.data
-          .filter((item: Product) => item.is_available)
-          .map((item: Product) => ({
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            price: item.price,
-            image_url: item.image_url,
-            category_id: item.category_id,
-            rating: item.rating,
-            is_available: item.is_available,
-          }));
-
-        setProducts(fetchedProducts);
+        response.data.sort((a, b) => {
+          if (b.is_available === a.is_available) {
+            return a.id - b.id;
+          }
+          return b.is_available === true ? 1 : -1;
+        });
+        setProducts(response.data);
       })
       .catch((error) => console.error("Error fetching menu items:", error));
 
@@ -61,7 +52,6 @@ export default function MenuPage() {
       .catch((error) => console.error("Error fetching categories:", error));
   }, []);
 
-  // Classify menus based on category_id
   useEffect(() => {
     if (products.length > 0 && categories.length > 0) {
       const categorized = categories.reduce((acc, category) => {

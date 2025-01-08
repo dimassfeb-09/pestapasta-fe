@@ -41,6 +41,19 @@ export default function CheckoutPage() {
     }
   };
 
+  const updateIsAvailableStock = () => {
+    checkoutItems.forEach((checkout) => {
+      const product = products.find(
+        (product) => checkout.product.id === product.id
+      );
+      if (product) {
+        checkout.product = product;
+      }
+    });
+
+    updateLocalStorage(checkoutItems);
+  };
+
   const fetchPaymentMethods = async () => {
     try {
       const apiConfig = api();
@@ -68,7 +81,7 @@ export default function CheckoutPage() {
     localStorage.setItem("checkout_items", JSON.stringify(updatedItems));
   };
 
-  const handleAddToCheckout = (product: Product) => {
+  const handleIncrementItemFromCheckout = (product: Product) => {
     const updatedItems = [...checkoutItems];
     const existingItem = updatedItems.find(
       (item) => item.product.id === product.id
@@ -76,6 +89,7 @@ export default function CheckoutPage() {
 
     if (existingItem) {
       existingItem.total_item += 1;
+      existingItem.product.price = product.price;
     } else {
       updatedItems.push({
         product: {
@@ -97,7 +111,7 @@ export default function CheckoutPage() {
     setCheckoutItems(updatedItems);
   };
 
-  const handleRemoveFromCheckout = (product: Product) => {
+  const handleDecrementItemFromCheckout = (product: Product) => {
     const updatedItems = checkoutItems.reduce((acc, item) => {
       if (item.product.id === product.id) {
         if (item.total_item > 1) {
@@ -116,16 +130,40 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleButtonOnClick = () => {
-    if (checkoutItems.length == 0) {
+  const handleRemoveProductFromCheckout = (id: number) => {
+    const updatedItems = checkoutItems.filter(
+      (checkout) => checkout.product.id != id
+    );
+    updateLocalStorage(updatedItems);
+  };
+
+  const handleSubmit = () => {
+    updateIsAvailableStock();
+
+    if (checkIsSomeProductIsOutOfStock()) return;
+    if (checkoutItems.length === 0) {
       toast.error("Keranjang kamu masih kosong nih...");
-    } else if (selectedPaymentMethod == null) {
+    } else if (!selectedPaymentMethod) {
       toast.error("Kamu belum pilih metode pembayaran nih...");
     } else {
       navigate("/confirm_user", {
-        state: { payment: selectedPaymentMethod, checkoutItems: checkoutItems },
+        state: { payment: selectedPaymentMethod, checkoutItems },
       });
     }
+  };
+
+  const checkIsSomeProductIsOutOfStock = () => {
+    const unavailableProduct = checkoutItems.find(
+      (checkout) => !checkout.product.is_available
+    );
+    if (unavailableProduct) {
+      toast.error(
+        `Terdapat produk kosong: ${unavailableProduct.product.name}, harap hapus terlebih dahulu`
+      );
+      return true;
+    }
+
+    return false;
   };
 
   useEffect(() => {
@@ -171,8 +209,11 @@ export default function CheckoutPage() {
               }
               note={item.note}
               onNote={(note) => handleNoteChange(item.product.id, note)}
-              onAdd={handleAddToCheckout}
-              onRemove={handleRemoveFromCheckout}
+              onIncrementItem={() => handleIncrementItemFromCheckout(product)}
+              onDecrementItem={() => handleDecrementItemFromCheckout(product)}
+              onRemoveProduct={() =>
+                handleRemoveProductFromCheckout(product.id)
+              }
             />
           );
         })}
@@ -247,7 +288,7 @@ export default function CheckoutPage() {
         </div>
 
         <div
-          onClick={handleButtonOnClick}
+          onClick={handleSubmit}
           className="flex items-center justify-center p-3 mt-5 text-lg font-bold text-white bg-black rounded-full cursor-pointer"
         >
           Pesan Sekarang

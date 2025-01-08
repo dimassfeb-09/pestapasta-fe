@@ -1,4 +1,4 @@
-import { Add, Check, Edit, Remove, Star } from "@mui/icons-material";
+import { Add, Check, Delete, Edit, Remove, Star, X } from "@mui/icons-material";
 import { formatToRupiah } from "../../../utills/toRupiah";
 import { Product } from "../../../models/Product";
 import { useState } from "react";
@@ -8,8 +8,9 @@ interface CardMenuCheckoutProps {
   total_item: number;
   note?: string;
   onNote: (note: string) => void;
-  onAdd: (product: Product) => void;
-  onRemove: (product: Product) => void;
+  onIncrementItem: () => void;
+  onDecrementItem: () => void;
+  onRemoveProduct: () => void;
 }
 
 export default function CardMenuCheckout({
@@ -17,8 +18,9 @@ export default function CardMenuCheckout({
   total_item,
   note,
   onNote,
-  onAdd,
-  onRemove,
+  onIncrementItem,
+  onDecrementItem,
+  onRemoveProduct,
 }: CardMenuCheckoutProps) {
   const [isNoteEditActive, setIsNoteEditActive] = useState<boolean>(false);
 
@@ -31,8 +33,15 @@ export default function CardMenuCheckout({
     >
       {/* Overlay for Out of Stock */}
       {!product.is_available && (
-        <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full bg-gray-800 bg-opacity-50 rounded-md">
+        <div className="absolute top-0 left-0 flex items-center justify-evenly w-full h-full bg-gray-800 bg-opacity-50 rounded-md">
           <div className="text-lg font-bold text-white">Out of Stock</div>
+          <div
+            className="flex items-center font-bold text-white bg-red-700 px-3 py-1 rounded-full text-sm absolute m-2 right-0 bottom-0 cursor-pointer"
+            onClick={onRemoveProduct}
+          >
+            <Delete className="text-black" />
+            <p>Remove</p>
+          </div>
         </div>
       )}
 
@@ -88,14 +97,14 @@ export default function CardMenuCheckout({
         />
         <div className="flex items-center justify-center gap-3 px-1 mt-2 border border-black rounded-md text-whitebg-black">
           <Remove
-            onClick={() => product.is_available && onRemove(product)}
+            onClick={() => product.is_available && onDecrementItem()}
             className={`cursor-pointer ${
               !product.is_available ? "pointer-events-none" : ""
             }`}
           />
           <div>{total_item}</div>
           <Add
-            onClick={() => product.is_available && onAdd(product)}
+            onClick={() => product.is_available && onIncrementItem()}
             className={`cursor-pointer ${
               !product.is_available ? "pointer-events-none" : ""
             }`}

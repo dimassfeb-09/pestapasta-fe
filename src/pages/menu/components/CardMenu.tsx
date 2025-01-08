@@ -22,10 +22,18 @@ export default function CardMenu({
 
   return (
     <>
+      {/* Main Card */}
       <div
         key={product.id}
-        className={`rounded-md flex items-center justify-between gap-3 p-5 bg-[${color}] border card_makanan`}
+        className={`rounded-md flex items-center justify-between gap-3 p-5 bg-[${color}] border-2 card_makanan relative`}
       >
+        {/* Overlay for Out of Stock */}
+        {!product.is_available && (
+          <div className="absolute top-0 left-0 w-full h-full bg-gray-800 bg-opacity-50 flex justify-center items-center rounded-md z-20">
+            <div className="text-lg font-bold text-white">Out of Stock</div>
+          </div>
+        )}
+
         <div className="flex flex-col gap-2 ">
           <div className="font-bold text-md">{product.name}</div>
           <div className="flex items-center gap-1 px-2 py-1 text-sm text-white bg-black border rounded-lg w-max">
@@ -64,12 +72,13 @@ export default function CardMenu({
         </div>
       </div>
 
+      {/* Image Click Overlay */}
       {onImageClick && (
         <div
           className="fixed inset-0 z-10 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50"
           onClick={() => setOnImageClick(false)}
         >
-          <div className="w-[28rem] bg-secondary -translate-y-14">
+          <div className="w-[28rem] bg-secondary">
             {/* Content */}
             <img
               src={product.image_url}

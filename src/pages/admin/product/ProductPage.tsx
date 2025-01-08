@@ -19,18 +19,18 @@ export default function ProductPage() {
   useEffect(() => {
     fetchAllProducts();
   }, []);
-
   const fetchAllProducts = async () => {
     try {
       const apiUrl = api().baseURL;
-      const data = await axios.get<Product[]>(`${apiUrl}/menus`, {
+      const response = await axios.get<Product[]>(`${apiUrl}/menus`, {
         headers: {
           Authorization: `Bearer ${access_token}`,
         },
       });
-      setProducts(data.data);
+      response.data.sort((a, b) => a.id - b.id);
+      setProducts(response.data);
     } catch (e) {
-      console.log("Failed to fetch data products");
+      console.log("Failed to fetch data products", e);
     }
   };
 
