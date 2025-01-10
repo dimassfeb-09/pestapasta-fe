@@ -6,7 +6,7 @@ import OrderDetailPage from "./pages/order/OrderDetailPage";
 import ConfirmPage from "./pages/confirm/ConfirmPage";
 import { LoginAdminPage } from "./pages/admin/LoginPage";
 import DefaultLayoutAdmin from "./layout/DefaultLayoutAdmin";
-import { TransactionPage } from "./pages/admin/TransactionPage";
+import { TransactionPage } from "./pages/admin/transaction/TransactionPage";
 import ProductPage from "./pages/admin/product/ProductPage";
 import AddProductPage from "./pages/admin/product/AddProductPage";
 import CategoryPage from "./pages/admin/category/CategoryPage";

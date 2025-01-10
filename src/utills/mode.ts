@@ -8,8 +8,6 @@ interface API {
 }
 
 export const api = (): API => {
-  console.log(API_MODE);
-
   const baseURL = API_MODE == "production" ? API_PRODUCTION : API_LOCAL;
   return {
     baseURL,

@@ -5,6 +5,7 @@ import Cookies from "js-cookie";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../../utills/mode";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function UpdateProductPage() {
   const [product, setProduct] = useState<Product>({
@@ -56,9 +57,7 @@ export default function UpdateProductPage() {
       });
       setCategories(data.data);
     } catch (e) {
-      console.log(e);
-
-      console.log("Failed to fetch data products");
+      toast.error("Gagal mendapatkan kategori.");
     }
   };
 

@@ -42,7 +42,7 @@ export default function CategoryPage() {
           Tambah Kategori
         </Link>
 
-        <div className="mt-3 overflow-hidden rounded-lg bg-emerald-400">
+        <div className="mt-3 overflow-x-auto rounded-lg bg-emerald-400">
           <table className="w-full">
             <thead>
               <tr className="text-white">

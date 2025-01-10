@@ -1,8 +1,8 @@
 import { RemoveRedEye, Close } from "@mui/icons-material";
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { formatToRupiah } from "../../utills/toRupiah";
-import { api } from "../../utills/mode";
+import { formatToRupiah } from "../../../utills/toRupiah";
+import { api } from "../../../utills/mode";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
 
@@ -51,7 +51,7 @@ export const TransactionPage = () => {
   return (
     <div className="min-h-screen bg-white">
       <div className="p-6">
-        <div className="overflow-hidden rounded-lg bg-emerald-400">
+        <div className="overflow-x-auto rounded-lg bg-emerald-400">
           <table className="w-full">
             <thead>
               <tr className="text-white">
@@ -64,7 +64,7 @@ export const TransactionPage = () => {
                 <th className="p-4 text-left">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white">
+            <tbody className="bg-white overflow-auto">
               {transactions.map((transaction) => (
                 <tr key={transaction.id} className="border-b">
                   <td className="p-4">{transaction.id}</td>
