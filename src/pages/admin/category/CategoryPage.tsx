@@ -27,8 +27,8 @@ export default function CategoryPage() {
         },
       });
       setCategories(data.data);
-    } catch (e) {
-      console.log("Failed to fetch data Categories");
+    } catch (e: any) {
+      console.log("Failed to fetch data Categories", e);
     }
   };
 

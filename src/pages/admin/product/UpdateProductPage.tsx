@@ -56,8 +56,8 @@ export default function UpdateProductPage() {
         },
       });
       setCategories(data.data);
-    } catch (e) {
-      toast.error("Gagal mendapatkan kategori.");
+    } catch (e: any) {
+      toast.error("Gagal mendapatkan kategori");
     }
   };
 

@@ -8,7 +8,7 @@ type MenuDetail = {
   rating: number;
 };
 
-type OrderDetail = {
+export type OrderDetail = {
   id: number;
   order_id: number;
   menu_id: number;

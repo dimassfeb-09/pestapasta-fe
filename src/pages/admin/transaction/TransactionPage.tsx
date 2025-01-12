@@ -5,13 +5,13 @@ import { formatToRupiah } from "../../../utills/toRupiah";
 import { api } from "../../../utills/mode";
 import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import { OrderDetail, OrderResponse } from "../../../models/OrderDetail";
 
 export const TransactionPage = () => {
   const [orderDetailOpen, setOrderDetailOpen] = useState(false);
-  const [selectedOrderDetail, setSelectedOrderDetail] = useState<any | null>(
-    null
-  );
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [selectedOrderDetail, setSelectedOrderDetail] =
+    useState<OrderResponse>();
+  const [transactions, setTransactions] = useState<OrderResponse[]>([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,7 +43,7 @@ export const TransactionPage = () => {
     fetchAllTransactions();
   }, []);
 
-  const handleOrderDetailsToggle = (transaction: any) => {
+  const handleOrderDetailsToggle = (transaction: OrderResponse) => {
     setOrderDetailOpen(!orderDetailOpen);
     setSelectedOrderDetail(transaction);
   };
@@ -128,7 +128,7 @@ const OrderDetails = ({
   orderDetail,
 }: {
   onClose: () => void;
-  orderDetail: any;
+  orderDetail: OrderResponse;
 }) => {
   return (
     <div
@@ -160,20 +160,22 @@ const OrderDetails = ({
             </thead>
 
             <tbody className="bg-yellow-50">
-              {orderDetail.order_details.map((item: any, index: number) => (
-                <tr key={item.id} className="border-b border-emerald-200">
-                  <td className="p-4">{index + 1}</td>
-                  <td className="p-4">{item.menu_detail.name}</td>
-                  <td className="p-4">{item.notes}</td>
-                  <td className="p-4">
-                    Rp. {item.subtotal_price.toLocaleString("id-ID")}
-                  </td>
-                  <td className="p-4">{item.quantity}</td>
-                  <td className="p-4">
-                    Rp. {item.subtotal_price.toLocaleString("id-ID")}
-                  </td>
-                </tr>
-              ))}
+              {orderDetail.order_details.map(
+                (item: OrderDetail, index: number) => (
+                  <tr key={item.id} className="border-b border-emerald-200">
+                    <td className="p-4">{index + 1}</td>
+                    <td className="p-4">{item.menu_detail.name}</td>
+                    <td className="p-4">{item.notes}</td>
+                    <td className="p-4">
+                      Rp. {item.subtotal_price.toLocaleString("id-ID")}
+                    </td>
+                    <td className="p-4">{item.quantity}</td>
+                    <td className="p-4">
+                      Rp. {item.subtotal_price.toLocaleString("id-ID")}
+                    </td>
+                  </tr>
+                )
+              )}
 
               {/* Total row fixed at the bottom */}
               <tr className="sticky bottom-0 z-10 bg-emerald-400">
@@ -184,7 +186,8 @@ const OrderDetails = ({
                   Rp.{" "}
                   {orderDetail.order_details
                     .reduce(
-                      (sum: any, item: any) => sum + item.subtotal_price,
+                      (sum: number, item: OrderDetail) =>
+                        sum + item.subtotal_price,
                       0
                     )
                     .toLocaleString("id-ID")}
