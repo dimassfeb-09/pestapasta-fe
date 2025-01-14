@@ -11,7 +11,7 @@ export default function DefaultLayout({ children }: LayoutProps) {
       {/* Fixed Navbar */}
       <nav className="fixed top-0 z-50 flex justify-center w-full h-16 p-1 bg-primary">
         <img
-          src="assets/logo.svg"
+          src="/assets/logo.svg"
           alt="Logo"
           draggable={false}
           className="h-full"

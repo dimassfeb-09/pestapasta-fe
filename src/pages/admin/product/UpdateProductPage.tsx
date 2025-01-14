@@ -81,7 +81,7 @@ export default function UpdateProductPage() {
       <div className="max-w-md p-6 mx-auto mt-8">
         <div className="p-4 rounded-t-lg bg-primary">
           <h1 className="text-2xl font-semibold text-center text-white">
-            Tambah Produk
+            Update Produk
           </h1>
         </div>
 
