@@ -106,7 +106,7 @@ export default function CardMenu({
               </div>
 
               {/* Action Buttons */}
-              <div className="relative bottom-4 left-[15em]">
+              <div className="absolute right-0 -translate-y-2 -translate-x-14">
                 <div className="flex gap-2">
                   <button
                     onClick={() => setOnImageClick(false)}
