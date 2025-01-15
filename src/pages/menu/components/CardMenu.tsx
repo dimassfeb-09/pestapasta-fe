@@ -29,7 +29,7 @@ export default function CardMenu({
       >
         {/* Overlay for Out of Stock */}
         {!product.is_available && (
-          <div className="absolute top-0 left-0 z-20 flex items-center justify-center w-full h-full bg-gray-800 bg-opacity-50 rounded-md">
+          <div className="absolute top-0 left-0 z-30 flex items-center justify-center w-full h-full bg-gray-800 bg-opacity-50 rounded-md">
             <div className="text-lg font-bold text-white">Out of Stock</div>
           </div>
         )}
@@ -75,7 +75,7 @@ export default function CardMenu({
       {/* Image Click Overlay */}
       {onImageClick && (
         <div
-          className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50"
+          className="fixed inset-0 z-10 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50"
           onClick={() => setOnImageClick(false)}
         >
           <div className="w-[28rem] h-[40em] bg-secondary">
@@ -106,7 +106,7 @@ export default function CardMenu({
               </div>
 
               {/* Action Buttons */}
-              <div className="absolute right-0 bottom-0">
+              <div className="relative right-0 bottom-0">
                 <div className="flex gap-2">
                   <button
                     onClick={() => setOnImageClick(false)}
