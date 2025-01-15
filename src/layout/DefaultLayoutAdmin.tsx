@@ -54,7 +54,7 @@ export default function DefaultLayoutAdmin({ children }: LayoutProps) {
           </div>
 
           <img
-            src="../assets/logo.svg"
+            src="/assets/logo.svg"
             alt="Logo"
             draggable={false}
             className="h-full"

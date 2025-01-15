@@ -75,7 +75,7 @@ export default function CardMenu({
       {/* Image Click Overlay */}
       {onImageClick && (
         <div
-          className="fixed inset-0 z-10 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50"
+          className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50"
           onClick={() => setOnImageClick(false)}
         >
           <div className="w-[28rem] h-[40em] bg-secondary">
@@ -106,7 +106,7 @@ export default function CardMenu({
               </div>
 
               {/* Action Buttons */}
-              <div className="absolute right-0 -translate-y-2 -translate-x-14">
+              <div className="absolute right-0 bottom-0">
                 <div className="flex gap-2">
                   <button
                     onClick={() => setOnImageClick(false)}
