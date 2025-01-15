@@ -78,7 +78,7 @@ export default function CardMenu({
           className="fixed inset-0 z-10 flex items-center justify-center p-4 bg-gray-900 bg-opacity-50"
           onClick={() => setOnImageClick(false)}
         >
-          <div className="w-[28rem] bg-secondary">
+          <div className="w-[28rem] h-[40em] bg-secondary">
             {/* Content */}
             <img
               src={product.image_url}
@@ -106,7 +106,7 @@ export default function CardMenu({
               </div>
 
               {/* Action Buttons */}
-              <div className="absolute bottom-0 right-0 p-4">
+              <div className="relative bottom-4 left-[15em]">
                 <div className="flex gap-2">
                   <button
                     onClick={() => setOnImageClick(false)}
