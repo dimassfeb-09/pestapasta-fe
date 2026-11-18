@@ -8,8 +8,8 @@ services:
         VITE_ENDPOINT_BACKEND_LOCAL: ${VITE_ENDPOINT_BACKEND_LOCAL:-/api}
         VITE_ENDPOINT_BACKEND_PRODUCTION: ${VITE_ENDPOINT_BACKEND_PRODUCTION:-/api}
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       PORT: "3000"
       HOST: "0.0.0.0"
