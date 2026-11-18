@@ -19,7 +19,7 @@ export default function AddCategoryPage() {
     return "";
   }
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const apiUrl = api().baseURL;
@@ -35,50 +35,56 @@ export default function AddCategoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-md p-6 mx-auto mt-8">
-        <div className="p-4 rounded-t-lg bg-primary">
-          <h1 className="text-2xl font-semibold text-center text-white">
-            Tambah Kategori
-          </h1>
-        </div>
+    <div className="max-w-xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-ink">Tambah Kategori</h1>
+        <p className="text-sm text-muted mt-1">Buat kategori baru.</p>
+      </div>
 
-        <div className="p-6 rounded-b-lg bg-yellow-50">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block mb-2 text-gray-800">Nama</label>
-              <input
-                type="text"
-                placeholder="Masukkan Nama..."
-                className="w-full p-3 border rounded-lg"
-                value={category?.category_name}
-                onChange={(e) =>
-                  setCategory({ ...category, category_name: e.target.value })
-                }
-              />
-            </div>
+      <div className="p-6 bg-white border border-gray-100 shadow-card rounded-2xl">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-ink">Nama</label>
+            <input
+              type="text"
+              placeholder="Nama kategori"
+              className="w-full h-11 px-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              value={category?.category_name}
+              onChange={(e) =>
+                setCategory({ ...category, category_name: e.target.value })
+              }
+            />
+          </div>
 
-            <div>
-              <label className="block mb-2 text-gray-800">Deskripsi</label>
-              <input
-                type="text"
-                placeholder="Masukkan Deskripsi..."
-                className="w-full p-3 border rounded-lg"
-                value={category?.description}
-                onChange={(e) =>
-                  setCategory({ ...category, description: e.target.value })
-                }
-              />
-            </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm font-medium text-ink">Deskripsi</label>
+            <textarea
+              placeholder="Deskripsi kategori"
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none"
+              value={category?.description}
+              onChange={(e) =>
+                setCategory({ ...category, description: e.target.value })
+              }
+            />
+          </div>
 
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => navigate("/admin/categories")}
+              className="flex-1 py-3 font-medium text-ink bg-gray-100 rounded-xl hover:bg-gray-200 transition"
+            >
+              Batal
+            </button>
             <button
               type="submit"
-              className="w-full py-3 font-medium text-white rounded-lg bg-primary hover:bg-primary-dark"
+              className="flex-1 py-3 font-semibold text-white bg-primary rounded-xl hover:bg-primaryDark transition active:scale-[0.99]"
             >
-              Tambah
+              Simpan
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );

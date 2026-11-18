@@ -27,39 +27,51 @@ export default function CategoryPage() {
         },
       });
       setCategories(data.data);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.log("Failed to fetch data Categories", e);
     }
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="p-6">
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">Kategori</h1>
+          <p className="text-sm text-muted mt-1">Kelola kategori menu.</p>
+        </div>
         <Link
-          className="px-3 py-2 text-lg font-bold text-white border-2 border-white rounded-md shadow-xl bg-primary"
+          className="px-4 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primaryDark transition"
           to="/admin/categories/add"
         >
-          Tambah Kategori
+          + Tambah Kategori
         </Link>
+      </div>
 
-        <div className="mt-3 overflow-x-auto rounded-lg bg-emerald-400">
-          <table className="w-full">
-            <thead>
-              <tr className="text-white">
-                <th className="p-4 text-left">ID</th>
-                <th className="p-4 text-left">Nama Kategori</th>
-                <th className="p-4 text-left">Deskripsi</th>
-                <th className="p-4 text-left">Aksi</th>
+      <div className="overflow-hidden bg-white border border-gray-100 shadow-card rounded-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-ink">
+              <tr>
+                <th className="px-4 py-3 text-left font-semibold">ID</th>
+                <th className="px-4 py-3 text-left font-semibold">Nama</th>
+                <th className="px-4 py-3 text-left font-semibold">Deskripsi</th>
+                <th className="px-4 py-3 text-left font-semibold">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white">
+            <tbody className="divide-y divide-gray-100">
               {categories.map((category) => (
-                <tr key={category.id} className="border-b">
-                  <td className="p-4">{category.id}</td>
-                  <td className="p-4">{category.category_name}</td>
-                  <td className="p-4">{category.description}</td>
-                  <td className="p-4">
-                    <Link to={`/admin/categories/${category.id}/edit`}>
+                <tr key={category.id} className="hover:bg-gray-50/50">
+                  <td className="px-4 py-3 text-muted">{category.id}</td>
+                  <td className="px-4 py-3 font-medium text-ink">
+                    {category.category_name}
+                  </td>
+                  <td className="px-4 py-3 text-muted">{category.description}</td>
+                  <td className="px-4 py-3">
+                    <Link
+                      to={`/admin/categories/${category.id}/edit`}
+                      className="text-muted hover:text-primary transition"
+                      aria-label="Edit"
+                    >
                       <Edit />
                     </Link>
                   </td>

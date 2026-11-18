@@ -62,53 +62,64 @@ export default function ProductPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="p-6">
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-ink">Menu</h1>
+          <p className="text-sm text-muted mt-1">Kelola daftar menu restoran.</p>
+        </div>
         <Link
-          className="px-3 py-2 text-lg font-bold text-white border-2 border-white rounded-md shadow-xl bg-primary"
+          className="px-4 py-2.5 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primaryDark transition"
           to="/admin/product/add"
         >
-          Tambah Menu
+          + Tambah Menu
         </Link>
+      </div>
 
-        <div className="mt-3 overflow-x-auto rounded-lg bg-emerald-400">
-          <table className="w-full">
-            <thead>
-              <tr className="text-white">
-                <th className="p-4 text-left">ID</th>
-                <th className="p-4 text-left">Gambar</th>
-                <th className="p-4 text-left">Nama</th>
-                <th className="p-4 text-left">Harga</th>
-                <th className="p-4 text-left">Status Tersedia</th>
-                <th className="p-4 text-left">Aksi </th>
+      <div className="overflow-hidden bg-white border border-gray-100 shadow-card rounded-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-ink">
+              <tr>
+                <th className="px-4 py-3 text-left font-semibold">ID</th>
+                <th className="px-4 py-3 text-left font-semibold">Gambar</th>
+                <th className="px-4 py-3 text-left font-semibold">Nama</th>
+                <th className="px-4 py-3 text-left font-semibold">Harga</th>
+                <th className="px-4 py-3 text-left font-semibold">Status</th>
+                <th className="px-4 py-3 text-left font-semibold">Aksi</th>
               </tr>
             </thead>
-            <tbody className="bg-white">
+            <tbody className="divide-y divide-gray-100">
               {products.map((product) => (
-                <tr key={product.id} className="border-b">
-                  <td className="p-4">{product.id}</td>
-                  <td className="p-4">
+                <tr key={product.id} className="hover:bg-gray-50/50">
+                  <td className="px-4 py-3 text-muted">{product.id}</td>
+                  <td className="px-4 py-3">
                     <img
-                      className="w-20 h-20"
+                      className="w-12 h-12 object-cover rounded-lg"
                       src={product.image_url}
                       alt={product.name}
                     />
                   </td>
-                  <td className="p-4">{product.name}</td>
-                  <td className="p-4">{formatToRupiah(product.price)}</td>
-                  <td className="p-4 ">
-                    <p
-                      className={` w-min text-sm font-bold rounded-md text-white px-2 py-1 ${
-                        product.is_available ? "bg-teal-500" : "bg-primary"
+                  <td className="px-4 py-3 font-medium text-ink">{product.name}</td>
+                  <td className="px-4 py-3 text-ink">
+                    {formatToRupiah(product.price)}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-block px-2.5 py-1 text-xs font-bold rounded-full text-white ${
+                        product.is_available ? "bg-greenTeal" : "bg-primary"
                       }`}
                     >
                       {product.is_available ? "TERSEDIA" : "KOSONG"}
-                    </p>
+                    </span>
                   </td>
-                  <td className="p-4">
-                    <div className="flex space-x-2">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
                       <button
+                        type="button"
                         onClick={() => handleUpdateAvailableProduct(product)}
+                        className="text-muted hover:text-ink transition"
+                        aria-label="Toggle availability"
                       >
                         {product.is_available ? (
                           <ToggleOn className="w-6 h-6 text-greenTeal" />
@@ -116,7 +127,11 @@ export default function ProductPage() {
                           <ToggleOff className="w-6 h-6 text-primary" />
                         )}
                       </button>
-                      <Link to={`/admin/product/${product.id}/edit`}>
+                      <Link
+                        to={`/admin/product/${product.id}/edit`}
+                        className="text-muted hover:text-primary transition"
+                        aria-label="Edit"
+                      >
                         <Edit />
                       </Link>
                     </div>

@@ -21,12 +21,12 @@ export default function PaymentPage() {
   const [isPaymentExpired, setIsPaymentExpired] = useState(false);
 
   const handleConfirmPayment = () => {
-    setPollingCount(0); // Reset polling count
+    setPollingCount(0);
     setIsPolling(true);
   };
 
   useEffect(() => {
-    let intervalId: any;
+    let intervalId: ReturnType<typeof setInterval> | undefined;
 
     const fetchOrderStatus = async () => {
       try {
@@ -49,10 +49,9 @@ export default function PaymentPage() {
         });
 
         if (data.order_status === "pending") {
-          return; // Continue polling
+          return;
         }
 
-        // Stop polling if status is not "pending"
         setIsPolling(false);
         if (intervalId) clearInterval(intervalId);
 
@@ -86,7 +85,7 @@ export default function PaymentPage() {
 
           return newCount;
         });
-      }, 10000); // Polling every 10 seconds
+      }, 10000);
     }
 
     return () => {
@@ -103,8 +102,9 @@ export default function PaymentPage() {
       );
       setOrderDetail(response.data);
       handleIsPaymentExpired(response.data.payments?.payment_expired_date);
-    } catch (e: any) {
-      if (e.status === 404) {
+    } catch (e: unknown) {
+      const err = e as { status?: number };
+      if (err.status === 404) {
         setOrderDetail(null);
       }
     } finally {
@@ -153,257 +153,188 @@ export default function PaymentPage() {
     return <OrderNotFoundCard orderId={orderId ?? "0"} />;
   }
 
+  const statusColor: Record<string, string> = {
+    success: "bg-greenTeal text-white",
+    canceled: "bg-red-500 text-white",
+    pending: "bg-yellow-500 text-white",
+    authorize: "bg-blue-500 text-white",
+    expired: "bg-orange-500 text-white",
+    failure: "bg-gray-900 text-white",
+    unknown: "bg-gray-400 text-white",
+  };
+  const statusClass =
+    statusColor[orderDetail?.payments?.payment_status ?? "unknown"] ??
+    "bg-gray-400 text-white";
+
   return (
-    <div className="flex flex-col min-h-screen p-6 bg-gray-100">
-      <div className="space-y-6">
-        {/* Payment Details */}
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h2 className="mb-4 text-2xl font-semibold text-gray-700">
-            Detail Pembayaran
-          </h2>
+    <div className="flex flex-col min-h-screen px-5 py-4 space-y-4">
+      <div className="p-5 bg-white border border-gray-100 shadow-card rounded-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-ink">Detail Pembayaran</h2>
+          <span className={`px-2.5 py-1 text-xs font-bold rounded-full ${statusClass}`}>
+            {orderDetail?.payments?.payment_status?.toUpperCase() || "N/A"}
+          </span>
+        </div>
 
-          {orderDetail?.payments.payment_method === "QRIS" &&
-          orderDetail?.payments.payment_status !== "success" ? (
-            <div>
-              <p className="mb-4 text-sm text-gray-600">
-                Pastikan jumlah yang dibayarkan sesuai dengan total yang tertera
-                di bawah ini.
-              </p>
-              <div className="flex flex-col items-center justify-center h-full">
-                <img
-                  src={orderDetail?.payments.payment_qr_code_url}
-                  alt="QRIS"
-                  className="max-w-36 max-h-36"
-                  draggable={false}
-                />
-              </div>
+        {orderDetail?.payments.payment_method === "QRIS" &&
+        orderDetail?.payments.payment_status !== "success" ? (
+          <div className="mb-4">
+            <p className="mb-3 text-sm text-muted">
+              Pastikan jumlah yang dibayarkan sesuai dengan total yang tertera.
+            </p>
+            <div className="flex justify-center">
+              <img
+                src={orderDetail?.payments.payment_qr_code_url}
+                alt="QRIS"
+                className="w-40 h-40 rounded-xl"
+                draggable={false}
+              />
             </div>
-          ) : null}
+          </div>
+        ) : null}
 
-          <table className="w-full text-sm text-gray-600">
-            <tbody>
-              {orderDetail?.payments.payment_method !== "QRIS" && (
-                <>
-                  <tr>
-                    <td className="px-4 py-2 font-medium text-gray-600">
-                      Nomor Rekening
-                    </td>
-                    <td className="px-4 py-2 font-bold">
-                      {orderDetail?.payments.payment_account_number}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="px-4 py-2 font-medium text-gray-600">
-                      Atas Nama
-                    </td>
-                    <td className="px-4 py-2 font-bold">
-                      {orderDetail?.payments.payment_account_name}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="flex items-center gap-2 px-4 py-2 font-medium text-gray-600">
-                      <p>Keterangan Berita</p>
-                      <p
-                        className="text-sm cursor-pointer"
-                        onClick={handleDialogToggle}
-                      >
-                        <QuestionMarkRounded
-                          fontSize="small"
-                          className="p-1 text-white rounded-full bg-primary"
-                        />
-                      </p>
-                    </td>
-                    <td className="px-4 py-2 font-bold">
-                      {orderDetail?.payments.transaction_code}
-                    </td>
-                  </tr>
-                </>
-              )}
-
-              <tr>
-                <td className="px-4 py-2 font-medium text-gray-600">
-                  Order ID
-                </td>
-                <td className="px-4 py-2 font-bold">
-                  <div className="px-2 py-1 text-white bg-red-500 rounded-md h-max w-max">
-                    {orderDetail?.id}
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td className="px-4 py-2 font-medium text-gray-600">Status</td>
-                <td className="px-4 py-2 font-bold">
-                  <div
-                    className={`px-2 py-1 w-max font-bold text-white rounded-md ${
-                      orderDetail?.payments?.payment_status
-                        ? {
-                            success: "bg-greenTeal",
-                            canceled: "bg-red-500",
-                            pending: "bg-yellow-500",
-                            authorize: "bg-blue-500",
-                            expired: "bg-orange-500",
-                            failure: "bg-black",
-                            unknown: "bg-gray-400",
-                          }[orderDetail.payments.payment_status]
-                        : "bg-gray-400"
-                    }`}
+        <dl className="divide-y divide-gray-100">
+          {orderDetail?.payments.payment_method !== "QRIS" && (
+            <>
+              <Row label="Nomor Rekening" value={orderDetail?.payments.payment_account_number} />
+              <Row label="Atas Nama" value={orderDetail?.payments.payment_account_name} />
+              <div className="flex items-center justify-between py-2.5">
+                <dt className="text-sm text-muted flex items-center gap-1.5">
+                  Keterangan Berita
+                  <button
+                    type="button"
+                    onClick={handleDialogToggle}
+                    className="flex items-center justify-center w-5 h-5 text-white rounded-full bg-primary"
+                    aria-label="Info kode transaksi"
                   >
-                    {orderDetail?.payments?.payment_status || "N/A"}
-                  </div>
-                </td>
-              </tr>
-
-              <tr>
-                <td className="px-4 py-2 font-medium text-gray-600">
-                  Metode Pembayaran
-                </td>
-                <td className="px-4 py-2 font-bold">
-                  {orderDetail?.payments.payment_method}
-                </td>
-              </tr>
-
-              <tr>
-                <td className="px-4 py-2 font-medium text-gray-600">
-                  Transaksi Dibuat
-                </td>
-                <td className="px-4 py-2 font-bold">
-                  {orderDetail?.payments.payment_create_date}
-                </td>
-              </tr>
-
-              {/* Countdown Timer */}
-              <tr>
-                <td className="px-4 py-2 font-medium text-gray-600">
-                  Batas Waktu Pembayaran
-                </td>
-                <td className="px-4 py-2 font-bold">
-                  {orderDetail?.payments.payment_expired_date}
-                </td>
-              </tr>
-
-              {orderDetail?.payments.payment_status == "pending" && (
-                <tr>
-                  <td className="px-4 py-2 font-medium text-gray-600">
-                    Sisa Waktu Pembayaran
-                  </td>
-                  <td className="px-4 py-2 font-bold">
-                    <CountdownTimer
-                      paymentExpiredDate={
-                        orderDetail?.payments.payment_expired_date || ""
-                      }
-                    />
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-
-          {orderDetail?.payments.payment_status === "pending" && (
-            <div className="mt-6">
-              <button
-                onClick={handleConfirmPayment}
-                className={`w-full py-3 text-white font-semibold rounded-lg ${
-                  isPaymentExpired
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : isPolling
-                    ? "bg-gray-400"
-                    : "bg-teal-500 hover:bg-teal-500/80"
-                } transition`}
-                disabled={isPaymentExpired || isPolling}
-              >
-                {isPolling
-                  ? `Tunggu yaa, lagi ngecek pembayaran kamu...`
-                  : "Konfirmasi Pembayaran"}
-              </button>
-              {isPaymentExpired && (
-                <p className="mt-2 text-sm text-red-600">
-                  Maaf, pembayaran sudah kedaluwarsa. Silakan membuat transaksi
-                  baru.
-                </p>
-              )}
-
-              <button
-                onClick={savePaymentLink}
-                className={`w-full py-3 text-white font-semibold rounded-lg mt-3 bg-primary hover:bg-primary/70`}
-              >
-                <FileCopy className="text-white" />
-                Salin Link Pembayaran
-              </button>
-            </div>
+                    <QuestionMarkRounded style={{ fontSize: 12 }} />
+                  </button>
+                </dt>
+                <dd className="text-sm font-bold text-ink">
+                  {orderDetail?.payments.transaction_code}
+                </dd>
+              </div>
+            </>
           )}
-        </div>
+          <Row
+            label="Order ID"
+            value={
+              <span className="px-2 py-0.5 text-xs font-bold text-white bg-primary rounded-md">
+                {orderDetail?.id}
+              </span>
+            }
+          />
+          <Row label="Metode Pembayaran" value={orderDetail?.payments.payment_method} />
+          <Row label="Transaksi Dibuat" value={orderDetail?.payments.payment_create_date} />
+          <Row label="Batas Waktu" value={orderDetail?.payments.payment_expired_date} />
+          {orderDetail?.payments.payment_status == "pending" && (
+            <Row
+              label="Sisa Waktu"
+              value={
+                <CountdownTimer
+                  paymentExpiredDate={
+                    orderDetail?.payments.payment_expired_date || ""
+                  }
+                />
+              }
+            />
+          )}
+        </dl>
 
-        {/* Customer Details */}
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h2 className="mb-4 text-2xl font-semibold text-gray-700">
-            Detail Pemesan
-          </h2>
-          <div className="flex justify-between mb-3">
-            <span className="text-gray-600">{orderDetail?.name}</span>
+        {orderDetail?.payments.payment_status === "pending" && (
+          <div className="mt-5 space-y-3">
+            <button
+              type="button"
+              onClick={handleConfirmPayment}
+              disabled={isPaymentExpired || isPolling}
+              className={`w-full py-3 text-white font-semibold rounded-xl transition ${
+                isPaymentExpired || isPolling
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-greenTeal hover:bg-greenTealDark"
+              }`}
+            >
+              {isPolling
+                ? "Tunggu yaa, lagi ngecek pembayaran kamu..."
+                : "Konfirmasi Pembayaran"}
+            </button>
+            {isPaymentExpired && (
+              <p className="text-sm text-red-600">
+                Maaf, pembayaran sudah kedaluwarsa. Silakan membuat transaksi baru.
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={savePaymentLink}
+              className="flex items-center justify-center gap-2 w-full py-3 text-white font-semibold bg-primary rounded-xl hover:bg-primaryDark transition"
+            >
+              <FileCopy fontSize="small" />
+              Salin Link Pembayaran
+            </button>
           </div>
-          <div className="flex justify-between mb-3">
-            <span className="text-gray-600">{orderDetail?.email}</span>
-          </div>
-        </div>
+        )}
+      </div>
 
-        {/* Product Summary */}
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h2 className="mb-4 text-2xl font-semibold text-gray-700">
-            Ringkasan Produk
-          </h2>
+      <div className="p-5 bg-white border border-gray-100 shadow-card rounded-2xl">
+        <h2 className="mb-3 text-lg font-bold text-ink">Detail Pemesan</h2>
+        <div className="space-y-1.5 text-sm">
+          <div className="text-ink font-medium">{orderDetail?.name}</div>
+          <div className="text-muted">{orderDetail?.email}</div>
+        </div>
+      </div>
+
+      <div className="p-5 bg-white border border-gray-100 shadow-card rounded-2xl">
+        <h2 className="mb-3 text-lg font-bold text-ink">Ringkasan Produk</h2>
+        <div className="space-y-3">
           {orderDetail?.order_details.map((product) => (
-            <div key={product.id} className="flex items-start mb-4 space-x-4">
+            <div key={product.id} className="flex gap-3">
               <img
                 src={product.menu_detail.image_url}
                 alt={product.menu_detail.name}
-                className="object-cover w-20 h-20 rounded-lg shadow-md"
+                className="object-cover w-16 h-16 rounded-xl shrink-0"
               />
-              <div>
-                <h3 className="font-medium text-gray-700">
-                  {product.menu_detail.name}
-                </h3>
-                <p className="text-sm text-gray-500 truncate">
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-ink">{product.menu_detail.name}</div>
+                <p className="text-xs text-muted line-clamp-1">
                   {product.menu_detail.description}
                 </p>
-                <div className="flex gap-2">
-                  <p className="text-sm text-gray-500">{product.quantity} x</p>
-                  <p className="text-sm text-gray-500">
-                    {formatToRupiah(product.subtotal_price)}
-                  </p>
+                <div className="flex gap-2 mt-1 text-xs text-muted">
+                  <span>{product.quantity} x</span>
+                  <span>{formatToRupiah(product.subtotal_price)}</span>
                 </div>
-                <p className="text-sm text-gray-500 truncate">
-                  Catatan: {product.notes}
-                </p>
+                {product.notes && (
+                  <p className="text-xs text-muted mt-0.5">
+                    Catatan: {product.notes}
+                  </p>
+                )}
               </div>
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Price Details */}
-        <div className="p-6 bg-white rounded-lg shadow-md">
-          <h2 className="mb-4 text-2xl font-semibold text-gray-700">
-            Detail Harga
-          </h2>
+      <div className="p-5 bg-white border border-gray-100 shadow-card rounded-2xl">
+        <h2 className="mb-3 text-lg font-bold text-ink">Detail Harga</h2>
+        <div className="space-y-2 text-sm">
           {orderDetail?.order_details.map((item, index) => (
-            <div key={index} className="flex justify-between mb-3">
-              <span className="text-gray-600">{item.menu_detail.name}</span>
-              <span className="font-medium">
+            <div key={index} className="flex justify-between">
+              <span className="text-muted">{item.menu_detail.name}</span>
+              <span className="font-medium text-ink">
                 {formatToRupiah(item.menu_detail.price)}
               </span>
             </div>
           ))}
-          <div className="flex justify-between pt-4 mt-4 border-t border-gray-200">
-            <span className="font-medium">Subtotal</span>
-            <span className="font-semibold">{formatToRupiah(total)}</span>
+          <div className="h-px bg-gray-100 my-2" />
+          <div className="flex justify-between">
+            <span className="text-muted">Subtotal</span>
+            <span className="font-semibold text-ink">{formatToRupiah(total)}</span>
           </div>
-          <div className="flex justify-between pt-4 mt-4 border-t border-gray-200">
-            <span className="font-medium">Pajak (10%)</span>
-            <span className="font-semibold">{formatToRupiah(total * 0.1)}</span>
+          <div className="flex justify-between">
+            <span className="text-muted">Pajak (10%)</span>
+            <span className="font-semibold text-ink">{formatToRupiah(total * 0.1)}</span>
           </div>
-          <div className="flex justify-between pt-4 mt-4 border-t border-gray-200">
-            <span className="font-medium">Total Pembayaran</span>
-            <span className="font-semibold">{formatToRupiah(total * 1.1)}</span>
+          <div className="flex justify-between pt-2 mt-2 border-t border-gray-100 font-bold text-ink">
+            <span>Total Pembayaran</span>
+            <span>{formatToRupiah(total * 1.1)}</span>
           </div>
         </div>
       </div>
@@ -413,20 +344,34 @@ export default function PaymentPage() {
   );
 }
 
+const Row = ({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) => (
+  <div className="flex items-center justify-between py-2.5">
+    <dt className="text-sm text-muted">{label}</dt>
+    <dd className="text-sm font-bold text-ink text-right">{value}</dd>
+  </div>
+);
+
 const DialogTransactionCode = ({ onClose }: { onClose: () => void }) => {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="w-full max-w-sm p-6 bg-white rounded-lg shadow-md">
+    <div className="fixed inset-0 flex items-center justify-center bg-gray-900/60 backdrop-blur-sm z-50 p-4">
+      <div className="w-full max-w-sm p-6 bg-white rounded-2xl shadow-soft">
         <div className="flex items-center justify-between">
-          <h3 className="text-xl font-semibold">Kode Transaksi</h3>
-          <Close onClick={onClose} className="cursor-pointer" />
+          <h3 className="text-lg font-bold text-ink">Kode Transaksi</h3>
+          <Close onClick={onClose} className="cursor-pointer text-muted" />
         </div>
-        <p className="mt-4 text-gray-600">
+        <p className="mt-3 text-sm text-muted">
           Pastikan Anda menyertakan kode transaksi saat melakukan pembayaran.
         </p>
-        <div className="flex justify-center mt-6">
+        <div className="flex justify-center mt-5">
           <button
-            className="px-4 py-2 text-white rounded-lg bg-primary"
+            type="button"
+            className="px-5 py-2.5 text-white rounded-xl bg-primary hover:bg-primaryDark transition"
             onClick={onClose}
           >
             Tutup

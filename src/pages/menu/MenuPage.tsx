@@ -6,16 +6,16 @@ import { ShoppingCart } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { CheckoutItem } from "../../models/CheckoutItem";
 import { Product } from "../../models/Product";
-import { ExpandMore, ExpandLess } from "@mui/icons-material"; // Import arrow icons
+import { Category } from "../../models/Category";
+import { ExpandMore, ExpandLess } from "@mui/icons-material";
 import { toast } from "react-toastify";
 import { api } from "../../utills/mode";
 
 export default function MenuPage() {
-  const [isScrolling, _] = useState(false);
   const [checkoutItems, setCheckoutItems] = useState<CheckoutItem[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<any[]>([]);
-  const [categorizedMenus, setCategorizedMenus] = useState<any>({});
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categorizedMenus, setCategorizedMenus] = useState<Record<string, Product[]>>({});
   const [expandedCategories, setExpandedCategories] = useState<
     Record<string, boolean>
   >({});
@@ -36,19 +36,23 @@ export default function MenuPage() {
     axios
       .get<Product[]>(`${apiConfig.baseURL}/menus`)
       .then((response) => {
-        response.data.sort((a, b) => {
-          if (b.is_available === a.is_available) {
-            return a.id - b.id;
-          }
-          return b.is_available === true ? 1 : -1;
-        });
-        setProducts(response.data);
+        if (Array.isArray(response.data)) {
+          response.data.sort((a, b) => {
+            if (b.is_available === a.is_available) {
+              return a.id - b.id;
+            }
+            return b.is_available === true ? 1 : -1;
+          });
+          setProducts(response.data);
+        }
       })
       .catch((error) => console.error("Error fetching menu items:", error));
 
     axios
       .get(`${apiConfig.baseURL}/categories`)
-      .then((response) => setCategories(response.data))
+      .then((response) => {
+        if (Array.isArray(response.data)) setCategories(response.data);
+      })
       .catch((error) => console.error("Error fetching categories:", error));
   }, []);
 
@@ -60,7 +64,7 @@ export default function MenuPage() {
         );
         acc[category.category_name] = categoryProducts;
         return acc;
-      }, {});
+      }, {} as Record<string, Product[]>);
       setCategorizedMenus(categorized);
 
       if (categories.length > 0) {
@@ -130,7 +134,6 @@ export default function MenuPage() {
     updateLocalStorage(updatedItems);
   };
 
-  // Toggle category expansion
   const handleCategoryToggle = (categoryName: string) => {
     setExpandedCategories((prev) => ({
       ...prev,
@@ -145,7 +148,7 @@ export default function MenuPage() {
 
       setTimeout(() => {
         setShakingButton(false);
-      }, 1000); // 500ms is the duration of the shake animation
+      }, 1000);
     } else {
       navigate("/checkout");
     }
@@ -153,33 +156,37 @@ export default function MenuPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <h2 className="flex items-center justify-center py-4 text-xl font-bold text-primary">
-        Menu
-      </h2>
+      <div className="px-5 pt-4 pb-2">
+        <h1 className="text-2xl font-bold text-ink">Menu</h1>
+        <p className="text-sm text-muted">Pilih menu favoritmu hari ini.</p>
+      </div>
 
-      <div className="flex flex-col flex-grow gap-5 px-5 py-3 pb-20">
+      <div className="flex flex-col gap-4 px-5 pb-28">
         {Object.keys(categorizedMenus).map((categoryName) => (
-          <div key={categoryName}>
-            <div
-              className="flex items-center mb-4 font-bold cursor-pointer"
+          <section key={categoryName}>
+            <button
+              type="button"
               onClick={() => handleCategoryToggle(categoryName)}
+              className="flex items-center justify-between w-full py-2"
             >
               <span
-                className={`transition-all duration-300 ${
-                  expandedCategories[categoryName] ? "text-lg" : "text-sm"
+                className={`font-semibold tracking-wide transition-colors ${
+                  expandedCategories[categoryName]
+                    ? "text-ink text-base"
+                    : "text-muted text-sm"
                 }`}
               >
                 {categoryName.toUpperCase()}
               </span>
               {expandedCategories[categoryName] ? (
-                <ExpandLess className="ml-2 text-teal-500" />
+                <ExpandLess className="text-muted" />
               ) : (
-                <ExpandMore className="ml-2 text-primary" />
+                <ExpandMore className="text-primary" />
               )}
-            </div>
+            </button>
 
             {expandedCategories[categoryName] && (
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 mt-2">
                 {categorizedMenus[categoryName].map((product: Product) => (
                   <CardMenu
                     key={product.id}
@@ -190,34 +197,29 @@ export default function MenuPage() {
                     product={product}
                     onAdd={handleAddToCheckout}
                     onRemove={handleRemoveFromCheckout}
-                    color={"red"}
                   />
                 ))}
               </div>
             )}
-          </div>
+          </section>
         ))}
       </div>
 
-      <div
-        className={`cursor-pointer fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center w-full rounded-full transition-transform duration-300 ${
-          isScrolling ? "translate-y-20" : "-translate-y-5"
-        }`}
-      >
-        <div
+      <div className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4">
+        <button
           onClick={handleButtonClick}
-          className={`flex justify-between w-[90%] px-4 py-3 text-white bg-black rounded-full ${
-            shakingButton ? "shake bg-red-500" : ""
+          className={`flex items-center justify-between w-full px-5 py-3.5 text-white rounded-2xl shadow-soft transition-transform duration-200 ${
+            shakingButton ? "shake bg-red-500" : "bg-ink hover:bg-black"
           }`}
         >
-          <div>
+          <span className="font-medium">
             {totalItems} item{totalItems !== 1 ? "s" : ""}
-          </div>
-          <div className="flex items-center gap-2">
-            <div>{formatToRupiah(totalPrice)}</div>
-            <ShoppingCart className="text-yellow-500" fontSize="small" />
-          </div>
-        </div>
+          </span>
+          <span className="flex items-center gap-2 font-semibold">
+            {formatToRupiah(totalPrice)}
+            <ShoppingCart fontSize="small" className="text-secondary" />
+          </span>
+        </button>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Logout, Menu } from "@mui/icons-material";
+import { Logout, Menu, Close } from "@mui/icons-material";
 import Cookies from "js-cookie";
 import { jwtDecode } from "jwt-decode";
 import { useState, useEffect } from "react";
@@ -31,7 +31,7 @@ export default function DefaultLayoutAdmin({ children }: LayoutProps) {
       setIsLoggedIn(false);
     }
 
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !access_token) {
       navigate("/admin/login");
     }
   }, [access_token]);
@@ -42,77 +42,79 @@ export default function DefaultLayoutAdmin({ children }: LayoutProps) {
     navigate("/admin/login");
   };
 
+  const navLinks = [
+    { to: "/admin/transaction", label: "Transaksi" },
+    { to: "/admin/product", label: "Menu" },
+    { to: "/admin/categories", label: "Kategori" },
+  ];
+
   return (
-    <div>
-      <nav className="fixed top-0 z-50 flex justify-center w-full h-16 p-1 bg-primary">
-        <div className="flex items-center justify-between w-full mx-3 lg:mx-20">
-          <div
-            className="sm:hidden text-white"
-            onClick={() => setIsNavBarActive(!isNavBarActive)}
-          >
-            <Menu />
+    <div className="min-h-screen bg-canvas">
+      <nav className="fixed top-0 z-50 w-full h-14 bg-white border-b border-gray-100">
+        <div className="flex items-center justify-between h-full px-4 mx-auto max-w-6xl">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className="sm:hidden text-ink"
+              onClick={() => setIsNavBarActive(!isNavBarActive)}
+              aria-label="Menu"
+            >
+              {isNavBarActive ? <Close /> : <Menu />}
+            </button>
+            <img
+              src="/assets/logo.svg"
+              alt="PestaPasta Admin"
+              draggable={false}
+              className="h-8"
+            />
           </div>
 
-          <img
-            src="/assets/logo.svg"
-            alt="Logo"
-            draggable={false}
-            className="h-full"
-          />
-
           {isLoggedIn && (
-            <div>
-              <div className="hidden sm:block">
-                <div className="flex font-bold text-white gap-14">
-                  <Link to="/admin/transaction">Transaksi</Link>
-                  <Link to="/admin/product">Menu</Link>
-                  <Link to="/admin/categories">Category</Link>
-                </div>
-              </div>
-
-              {isNavBarActive && (
-                <div className="absolute left-0 top-16 bg-primary w-full block sm:hidden">
-                  <div className="flex flex-col font-bold text-white gap-10 p-5">
-                    <Link
-                      to="/admin/transaction"
-                      onClick={() => setIsNavBarActive(false)}
-                    >
-                      Transaksi
-                    </Link>
-                    <Link
-                      to="/admin/product"
-                      onClick={() => setIsNavBarActive(false)}
-                    >
-                      Menu
-                    </Link>
-                    <Link
-                      to="/admin/categories"
-                      onClick={() => setIsNavBarActive(false)}
-                    >
-                      Category
-                    </Link>
-                  </div>
-                </div>
-              )}
+            <div className="hidden sm:flex items-center gap-6">
+              {navLinks.map((l) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  className="text-sm font-medium text-ink hover:text-primary transition"
+                >
+                  {l.label}
+                </Link>
+              ))}
             </div>
           )}
 
           {isLoggedIn && (
-            <div>
-              <div
-                onClick={handleLogout}
-                className="flex items-center gap-3 px-2 py-1 text-white bg-red-400 border rounded cursor-pointer"
-              >
-                <div className="text-sm">Keluar</div>
-                <Logout />
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primaryDark transition"
+            >
+              <Logout fontSize="small" />
+              Keluar
+            </button>
           )}
         </div>
+
+        {isNavBarActive && isLoggedIn && (
+          <div className="sm:hidden absolute left-0 top-14 w-full bg-white border-b border-gray-100 shadow-soft">
+            <div className="flex flex-col p-4 gap-3">
+              {navLinks.map((l) => (
+                <Link
+                  key={l.to}
+                  to={l.to}
+                  onClick={() => setIsNavBarActive(false)}
+                  className="text-sm font-medium text-ink hover:text-primary transition"
+                >
+                  {l.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
       </nav>
 
-      <main className="pt-20">
-        <div>{children}</div>
+      <main className="pt-14">
+        <div className="px-4 py-6 mx-auto max-w-6xl">{children}</div>
       </main>
     </div>
   );

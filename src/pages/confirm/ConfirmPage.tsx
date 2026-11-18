@@ -25,7 +25,6 @@ export default function ConfirmPage() {
     }
   }, [payment, navigate]);
 
-  // Validate email format
   const validateEmail = (email: string) => {
     const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     return regex.test(email);
@@ -37,10 +36,12 @@ export default function ConfirmPage() {
 
     if (!name || !email) {
       toast.error("Nama dan Email harus diisi.");
+      setIsLoading(false);
       return;
     }
     if (!validateEmail(email)) {
       toast.error("Format email tidak valid.");
+      setIsLoading(false);
       return;
     }
 
@@ -74,11 +75,12 @@ export default function ConfirmPage() {
       if (data.code == 200) {
         navigate(`/order_detail/${orderId}`);
       }
-    } catch (error: any) {
-      if (error.response) {
-        toast.error(error.response.data.error);
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { error?: string } }; message?: string };
+      if (err.response) {
+        toast.error(err.response.data?.error ?? "Terjadi kesalahan");
       } else {
-        toast.error(error.message);
+        toast.error(err.message ?? "Terjadi kesalahan");
       }
     } finally {
       setIsLoading(false);
@@ -86,60 +88,74 @@ export default function ConfirmPage() {
   };
 
   return (
-    <div className="p-5">
-      <div className="px-4 py-3 bg-white">
-        <div className="flex items-center">
-          <ChevronLeft
-            onClick={() => navigate("/checkout")}
-            className="w-6 h-6"
-          />
-          <h1 className="ml-2 text-lg font-medium">Konfirmasi Pemesanan</h1>
-        </div>
+    <div className="flex flex-col min-h-screen">
+      <div className="sticky top-14 z-40 flex items-center gap-2 px-5 py-3 bg-canvas">
+        <button
+          type="button"
+          onClick={() => navigate("/checkout")}
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-white shadow-card text-ink hover:bg-gray-50 transition"
+          aria-label="Kembali"
+        >
+          <ChevronLeft />
+        </button>
+        <h1 className="text-lg font-bold text-ink">Konfirmasi Pemesanan</h1>
       </div>
 
-      {/* Form Section */}
-      <div className="flex flex-col w-full gap-5 p-5 rounded-md bg-secondaryLight">
-        {/* Name Input */}
-        <div className="flex flex-col">
-          <label htmlFor="name" className="mb-2 text-sm font-semibold">
-            Nama
-          </label>
-          <input
-            type="text"
-            id="name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="h-10 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Masukkan nama Anda"
-          />
+      <div className="px-5 pb-6 space-y-4">
+        <div className="p-5 bg-white border border-gray-100 shadow-card rounded-2xl">
+          <div className="mb-4 text-base font-bold text-ink">Data Pemesan</div>
+
+          <div className="space-y-4">
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="name" className="text-sm font-medium text-ink">
+                Nama
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="h-11 px-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                placeholder="Masukkan nama Anda"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="email" className="text-sm font-medium text-ink">
+                Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-11 px-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                placeholder="Masukkan email Anda"
+              />
+            </div>
+          </div>
         </div>
 
-        {/* Email Input */}
-        <div className="flex flex-col">
-          <label htmlFor="email" className="mb-2 text-sm font-semibold">
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="h-10 p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Masukkan email Anda"
-          />
-        </div>
+        {payment && (
+          <div className="p-5 bg-white border border-gray-100 shadow-card rounded-2xl">
+            <div className="mb-2 text-base font-bold text-ink">
+              Metode Pembayaran
+            </div>
+            <div className="text-sm text-muted">{payment.name}</div>
+          </div>
+        )}
+
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={isLoading}
+          className={`flex items-center justify-center w-full py-3.5 text-white font-bold rounded-2xl transition active:scale-[0.99] ${
+            isLoading ? "bg-gray-400 cursor-not-allowed" : "bg-greenTeal hover:bg-greenTealDark"
+          }`}
+        >
+          {isLoading ? "Memproses..." : "Kirim Invoice"}
+        </button>
       </div>
-
-      {/* Submit Button */}
-      <button
-        onClick={handleSubmit}
-        className={`flex items-center justify-center w-full p-3 text-white rounded-b-md bg-greenTeal  ${
-          isLoading ? "bg-gray-400" : "hover:bg-green-700"
-        }`}
-        disabled={isLoading}
-      >
-        {isLoading ? "Loading..." : "Kirim Invoice"}
-      </button>
     </div>
   );
 }

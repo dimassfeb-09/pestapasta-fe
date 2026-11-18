@@ -21,16 +21,17 @@ export default function AddProductPage() {
   const navigate = useNavigate();
 
   const access_token = Cookies.get("access_token");
-  if (!access_token) {
-    navigate("/admin/login");
-    return "";
-  }
 
   useEffect(() => {
+    if (!access_token) {
+      navigate("/admin/login");
+      return;
+    }
     fetchAllCategories();
   }, [access_token]);
 
   const fetchAllCategories = async () => {
+    if (!access_token) return;
     try {
       const apiUrl = api().baseURL;
       const data = await axios.get<Category[]>(`${apiUrl}/categories`, {
@@ -41,12 +42,11 @@ export default function AddProductPage() {
       setCategories(data.data);
     } catch (e) {
       console.log(e);
-
       console.log("Failed to fetch data products");
     }
   };
 
-  const handleSubmit = async (e: any) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       const apiUrl = api().baseURL;
@@ -61,96 +61,138 @@ export default function AddProductPage() {
     }
   };
 
+  if (!access_token) return null;
+
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-md p-6 mx-auto mt-8">
-        <div className="p-4 rounded-t-lg bg-primary">
-          <h1 className="text-2xl font-semibold text-center text-white">
-            Tambah Produk
-          </h1>
-        </div>
+    <div className="max-w-xl mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-ink">Tambah Menu</h1>
+        <p className="text-sm text-muted mt-1">Isi detail menu baru.</p>
+      </div>
 
-        <div className="p-6 rounded-b-lg bg-yellow-50">
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label className="block mb-2 text-gray-800">Gambar</label>
-              <input
-                type="text"
-                placeholder="Masukkan Link Gambar..."
-                className="w-full p-3 border rounded-lg"
-                value={product?.image_url}
-                onChange={(e) =>
-                  setProduct({ ...product, image_url: e.target.value })
-                }
-              />
-            </div>
+      <div className="p-6 bg-white border border-gray-100 shadow-card rounded-2xl">
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <Field label="Gambar (URL)">
+            <input
+              type="text"
+              placeholder="https://..."
+              className="w-full h-11 px-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              value={product?.image_url}
+              onChange={(e) =>
+                setProduct({ ...product, image_url: e.target.value })
+              }
+            />
+          </Field>
 
-            <div>
-              <label className="block mb-2 text-gray-800">Nama</label>
-              <input
-                type="text"
-                placeholder="Masukkan Nama..."
-                className="w-full p-3 border rounded-lg"
-                value={product?.name}
-                onChange={(e) =>
-                  setProduct({ ...product, name: e.target.value })
-                }
-              />
-            </div>
+          <Field label="Nama">
+            <input
+              type="text"
+              placeholder="Nama menu"
+              className="w-full h-11 px-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+              value={product?.name}
+              onChange={(e) =>
+                setProduct({ ...product, name: e.target.value })
+              }
+            />
+          </Field>
 
-            <div>
-              <label className="block mb-2 text-gray-800">Harga</label>
+          <div className="grid grid-cols-2 gap-4">
+            <Field label="Harga">
               <input
                 type="number"
-                placeholder="Masukkan Harga..."
-                className="w-full p-3 border rounded-lg"
+                placeholder="0"
+                className="w-full h-11 px-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
                 value={product?.price}
                 onChange={(e) =>
                   setProduct({ ...product, price: Number(e.target.value) })
                 }
               />
-            </div>
-
-            <div>
-              <label className="block mb-2 text-gray-800">Deskripsi</label>
+            </Field>
+            <Field label="Rating">
               <input
-                type="text"
-                placeholder="Masukkan Deskripsi..."
-                className="w-full p-3 border rounded-lg"
-                value={product?.description}
+                type="number"
+                step="0.1"
+                placeholder="0"
+                className="w-full h-11 px-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+                value={product?.rating}
                 onChange={(e) =>
-                  setProduct({ ...product, description: e.target.value })
+                  setProduct({ ...product, rating: Number(e.target.value) })
                 }
               />
-            </div>
+            </Field>
+          </div>
 
+          <Field label="Deskripsi">
+            <textarea
+              placeholder="Deskripsi menu"
+              rows={3}
+              className="w-full px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition resize-none"
+              value={product?.description}
+              onChange={(e) =>
+                setProduct({ ...product, description: e.target.value })
+              }
+            />
+          </Field>
+
+          <Field label="Kategori">
             <select
-              id="countries"
-              value={product.category_id || ""}
+              className="w-full h-11 px-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition bg-white"
+              value={product?.category_id}
               onChange={(e) =>
                 setProduct({ ...product, category_id: Number(e.target.value) })
               }
-              className=" bg-gray-50 border border-gray-300  text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             >
-              <option value="" disabled>
-                Pilih Kategori
-              </option>
-              {categories?.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.category_name}
+              <option value={0}>Pilih kategori</option>
+              {categories?.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.category_name}
                 </option>
               ))}
             </select>
+          </Field>
 
+          <label className="flex items-center gap-2 text-sm text-ink">
+            <input
+              type="checkbox"
+              checked={product?.is_available}
+              onChange={(e) =>
+                setProduct({ ...product, is_available: e.target.checked })
+              }
+              className="w-4 h-4 accent-primary"
+            />
+            Tersedia
+          </label>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => navigate("/admin/product")}
+              className="flex-1 py-3 font-medium text-ink bg-gray-100 rounded-xl hover:bg-gray-200 transition"
+            >
+              Batal
+            </button>
             <button
               type="submit"
-              className="w-full py-3 font-medium text-white rounded-lg bg-primary hover:bg-primary-dark"
+              className="flex-1 py-3 font-semibold text-white bg-primary rounded-xl hover:bg-primaryDark transition active:scale-[0.99]"
             >
-              Tambah
+              Simpan
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>
   );
 }
+
+const Field = ({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-sm font-medium text-ink">{label}</label>
+    {children}
+  </div>
+);

@@ -7,23 +7,20 @@ interface OrderNotFoundCardProps {
 
 const OrderNotFoundCard: React.FC<OrderNotFoundCardProps> = ({ orderId }) => {
   return (
-    <div className="max-w-md mx-auto bg-red-100 border border-red-400 rounded-lg shadow-md p-6 mt-8">
-      <h2 className="text-2xl font-semibold text-red-700 mb-4">
-        Order Not Found
-      </h2>
-      <p className="text-lg text-red-700 mb-2">
-        We're sorry, but the order with ID <strong>{orderId}</strong> could not
-        be found.
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white border border-gray-100 shadow-card rounded-2xl text-center">
+      <h2 className="text-xl font-bold text-ink mb-2">Pesanan tidak ditemukan</h2>
+      <p className="text-sm text-muted mb-1">
+        Pesanan dengan ID <strong className="text-ink">{orderId}</strong> tidak
+        dapat ditemukan.
       </p>
-      <p className="text-sm text-yellow-800 mb-6">
-        Please check the order ID and try again. If you continue to experience
-        issues, please contact support.
+      <p className="text-sm text-muted mb-6">
+        Periksa kembali ID pesanan atau hubungi customer service.
       </p>
       <Link
-        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-400"
+        className="inline-flex px-5 py-2.5 bg-primary text-white rounded-xl font-medium hover:bg-primaryDark transition"
         to="/"
       >
-        Go Back
+        Kembali ke Menu
       </Link>
     </div>
   );

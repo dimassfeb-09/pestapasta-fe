@@ -26,89 +26,100 @@ export default function CardMenuCheckout({
 
   return (
     <div
-      key={product.id}
-      className={`relative flex items-center justify-between px-3 py-2 border rounded-md card_makanan ${
-        !product.is_available ? "opacity-50" : ""
+      className={`relative flex gap-3 p-4 bg-white border border-gray-100 shadow-card rounded-2xl ${
+        !product.is_available ? "opacity-60" : ""
       }`}
     >
-      {/* Overlay for Out of Stock */}
       {!product.is_available && (
-        <div className="absolute top-0 left-0 flex items-center justify-evenly w-full h-full bg-gray-800 bg-opacity-50 rounded-md">
-          <div className="text-lg font-bold text-white">Out of Stock</div>
-          <div
-            className="flex items-center font-bold text-white bg-red-700 px-3 py-1 rounded-full text-sm absolute m-2 right-0 bottom-0 cursor-pointer"
-            onClick={onRemoveProduct}
-          >
-            <Delete className="text-black" />
-            <p>Remove</p>
-          </div>
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-gray-900/50 rounded-2xl">
+          <span className="px-3 py-1 text-sm font-semibold text-white bg-primary rounded-full">
+            Habis
+          </span>
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
-        <div className="font-bold text-md">{product.name}</div>
-        <div className="flex items-center gap-1 px-2 py-1 text-sm text-white bg-black border rounded-lg w-max">
-          <div>{product.rating}</div>
-          <Star className="text-yellow-500" fontSize="small" />
+      <img
+        src={product.image_url}
+        className="object-cover w-20 h-20 rounded-xl shrink-0"
+        alt={product.name}
+        draggable={false}
+      />
+
+      <div className="flex-1 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="font-semibold text-ink leading-tight">{product.name}</h3>
+          <button
+            type="button"
+            onClick={onRemoveProduct}
+            className="text-muted hover:text-primary transition shrink-0"
+            aria-label="Hapus"
+          >
+            <Delete fontSize="small" />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 mt-1">
+          <span className="text-sm font-bold text-primary">
+            {formatToRupiah(product.price)}
+          </span>
+          <span className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs bg-secondaryLight rounded-full">
+            {product.rating}
+            <Star fontSize="inherit" className="text-yellow-500" />
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1 mt-2">
+          <button
+            type="button"
+            onClick={() => product.is_available && onDecrementItem()}
+            disabled={!product.is_available}
+            className="flex items-center justify-center w-7 h-7 text-white bg-ink rounded-full hover:bg-black active:scale-95 transition disabled:opacity-40"
+            aria-label="Kurangi"
+          >
+            <Remove fontSize="small" />
+          </button>
+          <span className="w-7 text-center font-semibold text-ink">
+            {total_item}
+          </span>
+          <button
+            type="button"
+            onClick={() => product.is_available && onIncrementItem()}
+            disabled={!product.is_available}
+            className="flex items-center justify-center w-7 h-7 text-white bg-primary rounded-full hover:bg-primaryDark active:scale-95 transition disabled:opacity-40"
+            aria-label="Tambah"
+          >
+            <Add fontSize="small" />
+          </button>
         </div>
 
         <div
-          className={`flex items-center p-1 border rounded-md w-min ${
-            isNoteEditActive ? "bg-white" : "bg-gray-200"
-          } w-full`}
+          className={`flex items-center gap-2 mt-2 px-2.5 py-1.5 rounded-lg border transition ${
+            isNoteEditActive
+              ? "bg-white border-primary"
+              : "bg-gray-50 border-gray-200"
+          }`}
         >
           <input
             type="text"
             value={note}
             onChange={(e) => onNote(e.target.value)}
-            placeholder="Tambahkan catatan"
-            className={`px-2 py-1 text-xs text-gray-700 placeholder-gray-500 transition-all border-none rounded-md focus:outline-none ${
-              isNoteEditActive ? "bg-white" : "bg-transparent"
-            }`}
-            style={{
-              width: isNoteEditActive ? "100%" : "60%", // Lebar lebih besar saat aktif
-              minWidth: "150px", // Memberikan batas minimum lebar
-            }}
+            placeholder="Tambah catatan"
+            className="flex-1 text-xs text-ink placeholder-muted bg-transparent border-none focus:outline-none"
             disabled={!isNoteEditActive}
           />
-
           {!isNoteEditActive ? (
             <Edit
               onClick={() => setIsNoteEditActive(true)}
-              className="ml-2 text-gray-600 transition-all cursor-pointer hover:text-blue-500"
+              className="text-muted cursor-pointer hover:text-primary transition"
+              fontSize="small"
             />
           ) : (
             <Check
               onClick={() => setIsNoteEditActive(false)}
-              className="ml-2 text-gray-600 transition-all cursor-pointer hover:text-green-500"
+              className="text-greenTeal cursor-pointer hover:text-greenTealDark transition"
+              fontSize="small"
             />
           )}
-        </div>
-
-        <div>{formatToRupiah(product.price)}</div>
-      </div>
-
-      <div className="flex flex-col items-center justify-center">
-        <img
-          src={product.image_url}
-          className="rounded-lg min-w-28 min-h-28 max-w-28 max-h-28"
-          alt={product.name}
-          draggable={false}
-        />
-        <div className="flex items-center justify-center gap-3 px-1 mt-2 border border-black rounded-md text-whitebg-black">
-          <Remove
-            onClick={() => product.is_available && onDecrementItem()}
-            className={`cursor-pointer ${
-              !product.is_available ? "pointer-events-none" : ""
-            }`}
-          />
-          <div>{total_item}</div>
-          <Add
-            onClick={() => product.is_available && onIncrementItem()}
-            className={`cursor-pointer ${
-              !product.is_available ? "pointer-events-none" : ""
-            }`}
-          />
         </div>
       </div>
     </div>

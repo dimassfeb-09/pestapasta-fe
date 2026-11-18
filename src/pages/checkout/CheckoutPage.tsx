@@ -4,7 +4,7 @@ import CardMenuCheckout from "./components/CardMenuCheckout";
 import { Product } from "../../models/Product";
 import { CheckoutItem } from "../../models/CheckoutItem";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft } from "@mui/icons-material";
+import { ChevronLeft, ExpandMore } from "@mui/icons-material";
 import axios from "axios";
 import { PaymentMethod } from "../../models/PaymentMethod";
 import { toast } from "react-toastify";
@@ -35,7 +35,7 @@ export default function CheckoutPage() {
     try {
       const apiConfig = api();
       const response = await axios.get<Product[]>(`${apiConfig.baseURL}/menus`);
-      setProducts(response.data);
+      if (Array.isArray(response.data)) setProducts(response.data);
     } catch (e) {
       console.log(e);
     }
@@ -58,7 +58,7 @@ export default function CheckoutPage() {
     try {
       const apiConfig = api();
       const response = await axios.get(`${apiConfig.baseURL}/payment_methods`);
-      setPaymentMethods(response.data); // Store payment methods in state
+      setPaymentMethods(response.data);
     } catch (error) {
       console.error("Error fetching payment methods:", error);
     }
@@ -180,14 +180,19 @@ export default function CheckoutPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="px-4 py-3 bg-white">
-        <div className="flex items-center">
-          <ChevronLeft onClick={() => navigate("/")} className="w-6 h-6" />
-          <h1 className="ml-2 text-lg font-medium">Checkout</h1>
-        </div>
+      <div className="sticky top-14 z-40 flex items-center gap-2 px-5 py-3 bg-canvas">
+        <button
+          type="button"
+          onClick={() => navigate("/")}
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-white shadow-card text-ink hover:bg-gray-50 transition"
+          aria-label="Kembali"
+        >
+          <ChevronLeft />
+        </button>
+        <h1 className="text-lg font-bold text-ink">Checkout</h1>
       </div>
 
-      <div className="flex flex-col gap-5 px-5 py-3 ">
+      <div className="flex flex-col gap-3 px-5 pb-6">
         {checkoutItems.map((item) => {
           const product = products.find(
             (product) => product.id === item.product.id
@@ -198,8 +203,8 @@ export default function CheckoutPage() {
               key={item.product.id}
               product={{
                 ...item.product,
-                price: product.price, // Using the fetched price
-                rating: product.rating, // Using the fetched rating
+                price: product.price,
+                rating: product.rating,
                 is_available: product.is_available,
               }}
               total_item={
@@ -219,80 +224,83 @@ export default function CheckoutPage() {
         })}
       </div>
 
-      <div className="px-5 py-3">
-        {/* Payment Summary Section */}
-        <div className="z-10 p-4 border shadow-lg rounded-t-xl">
-          <div className="mb-3 text-lg font-bold">Ringkasan Pembayaran</div>
-
-          <div className="flex justify-between w-full mb-2">
-            <div>Harga</div>
-            <div>{formatToRupiah(totalAmount)}</div>
+      <div className="px-5 pb-6 space-y-3">
+        <div className="p-4 bg-white border border-gray-100 shadow-card rounded-2xl">
+          <div className="mb-3 text-base font-bold text-ink">
+            Ringkasan Pembayaran
           </div>
 
-          <div className="flex justify-between w-full mb-2">
-            <div>Pajak</div>
-            <div>10%</div>
+          <div className="flex justify-between text-sm text-muted mb-1.5">
+            <span>Harga</span>
+            <span className="text-ink">{formatToRupiah(totalAmount)}</span>
+          </div>
+          <div className="flex justify-between text-sm text-muted mb-1.5">
+            <span>Pajak</span>
+            <span className="text-ink">10%</span>
+          </div>
+          <div className="flex justify-between text-sm text-muted mb-3">
+            <span>Diskon</span>
+            <span className="text-ink">0</span>
           </div>
 
-          <div className="flex justify-between w-full mb-2">
-            <div>Diskon</div>
-            <div>0</div>
-          </div>
+          <div className="h-px bg-gray-100 mb-3" />
 
-          <div className="w-full h-0.5 my-3 bg-gray-300"></div>
-
-          <div className="flex justify-between w-full font-bold">
-            <div>Total</div>
-            <div>{formatToRupiah(finalPrice)}</div> {/* Assuming a 10% tax */}
+          <div className="flex justify-between font-bold text-ink">
+            <span>Total</span>
+            <span>{formatToRupiah(finalPrice)}</span>
           </div>
         </div>
 
-        {/* Payment Method Toggle Section */}
-        <div
-          className={`bg-teal-500 text-white font-semibold p-3 ${
-            isPaymentMethodActive ? "rounded-b-none" : "rounded-b-lg"
-          } transition-all duration-300 ease-in-out w-full cursor-pointer`}
-          onClick={handleToggle}
-        >
-          {selectedPaymentMethod?.name || "Pilih Metode Pembayaran"}
-        </div>
-
-        <div
-          className={`overflow-hidden bg-teal-500 rounded-b-lg text-white transition-all duration-500 ease-in-out transform w-full ${
-            isPaymentMethodActive ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
-          }`}
-          style={{
-            transitionProperty: "max-height, opacity, transform",
-          }}
-        >
-          {/* Payment Methods List */}
-          <div
-            className={`flex flex-col transition-opacity duration-500 ease-in-out ${
-              isPaymentMethodActive ? "opacity-100" : "opacity-0"
+        <div className="relative">
+          <button
+            type="button"
+            onClick={handleToggle}
+            className={`flex items-center justify-between w-full px-4 py-3 font-semibold rounded-2xl transition ${
+              isPaymentMethodActive
+                ? "bg-greenTeal text-white rounded-b-none"
+                : "bg-greenTeal text-white"
             }`}
           >
-            {/* Loop through each payment method */}
-            {paymentMethods.map((method) => (
-              <div
-                key={method.id}
-                className="p-3 transition-colors cursor-pointer hover:bg-teal-300"
-                onClick={() => {
-                  setIsPaymentMethodActive(false); // Close the dropdown
-                  setSelectedPaymentMethod(method); // Set the selected payment method
-                }}
-              >
-                {method.name}
-              </div>
-            ))}
+            <span>
+              {selectedPaymentMethod?.name || "Pilih Metode Pembayaran"}
+            </span>
+            <ExpandMore
+              className={`transition-transform ${
+                isPaymentMethodActive ? "rotate-180" : ""
+              }`}
+            />
+          </button>
+
+          <div
+            className={`overflow-hidden bg-greenTeal rounded-b-2xl text-white transition-all duration-300 ${
+              isPaymentMethodActive ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
+            }`}
+          >
+            <div className="flex flex-col">
+              {paymentMethods.map((method) => (
+                <button
+                  key={method.id}
+                  type="button"
+                  onClick={() => {
+                    setIsPaymentMethodActive(false);
+                    setSelectedPaymentMethod(method);
+                  }}
+                  className="px-4 py-3 text-left transition-colors hover:bg-greenTealDark"
+                >
+                  {method.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div
+        <button
+          type="button"
           onClick={handleSubmit}
-          className="flex items-center justify-center p-3 mt-5 text-lg font-bold text-white bg-black rounded-full cursor-pointer"
+          className="flex items-center justify-center w-full py-3.5 text-white font-bold bg-ink rounded-2xl hover:bg-black active:scale-[0.99] transition"
         >
           Pesan Sekarang
-        </div>
+        </button>
       </div>
     </div>
   );
